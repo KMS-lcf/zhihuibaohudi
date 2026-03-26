@@ -72,7 +72,17 @@ import {
   PanelLeftClose,
   PanelLeft,
   Cat,
-  Fish
+  Fish,
+  Flame,
+  Bell,
+  Zap,
+  Package,
+  Minus,
+  Droplet,
+  CloudLightning,
+  Plug,
+  Home as HomeIcon,
+  Scan
 } from 'lucide-react'
 
 // 从组件目录导入
@@ -149,6 +159,20 @@ const menuData = [
       { id: 'geology-resource', name: '资源展示' },
       { id: 'geology-data', name: '数据管理' },
       { id: 'geology-stats', name: '统计分析' }
+    ]
+  },
+  {
+    id: 'forest-fire',
+    name: '森林防火',
+    icon: Flame,
+    children: [
+      { id: 'forest-overview', name: '综合展示' },
+      { id: 'forest-overview-light', name: '综合展示1' },
+      { id: 'forest-monitoring', name: '监测预警' },
+      { id: 'forest-command', name: '指挥调度' },
+      { id: 'forest-history', name: '历史数据' },
+      { id: 'forest-resource', name: '防火资源' },
+      { id: 'forest-stats', name: '统计分析' }
     ]
   },
   {
@@ -4282,6 +4306,1147 @@ function GeologyResourceDetail({
   )
 }
 
+// ========== 森林防火综合展示界面 ==========
+
+// 森林防火综合展示数据
+const forestFireOverviewData = {
+  // 防火队伍
+  fireTeams: {
+    professional: 3,      // 区级专业队
+    semiProfessional: 30  // 半专业队（应急队伍）
+  },
+
+  // 防灭火资源
+  fireResources: [
+    { name: '防火检查站', value: 23, icon: 'Building', color: 'text-blue-400' },
+    { name: '瞭望塔', value: 4, icon: 'Eye', color: 'text-cyan-400' },
+    { name: '消防水源点', value: 540, icon: 'Droplets', color: 'text-blue-400' },
+    { name: '阻隔系统', value: 15, icon: 'Shield', color: 'text-green-400' },
+    { name: '防火物资库', value: 3, icon: 'Package', color: 'text-orange-400' },
+    { name: '防火隔离带', value: 5, icon: 'Minus', color: 'text-yellow-400' },
+    { name: '管网设施', value: 2, icon: 'Waves', color: 'text-blue-400' },
+    { name: '电力线设施', value: 10, icon: 'Zap', color: 'text-yellow-400' },
+    { name: '供水设施', value: 1, icon: 'Droplet', color: 'text-cyan-400' },
+    { name: '消防栓', value: 55, icon: 'MapPin', color: 'text-red-400' },
+    { name: '消防水源面', value: 235, icon: 'Water', color: 'text-blue-400' }
+  ],
+
+  // 防火工作成果（2025年）
+  achievements: {
+    firesExtinguished: 25,     // 扑灭火灾
+    alarmsVerified: 589        // 核查警报
+  },
+
+  // 防火隐患
+  fireHazards: [
+    { name: '坟场', value: 568, icon: 'Cross', color: 'text-red-400' },
+    { name: '避雷塔', value: 5, icon: 'CloudLightning', color: 'text-yellow-400' },
+    { name: '充电桩', value: 3, icon: 'Plug', color: 'text-green-400' },
+    { name: '高压铁塔', value: 22, icon: 'Tower', color: 'text-gray-400' },
+    { name: '燃气桩', value: 66, icon: 'Flame', color: 'text-orange-400' },
+    { name: '高压线', value: 21, icon: 'Zap', color: 'text-yellow-400' },
+    { name: '居民点', value: 309, icon: 'Home', color: 'text-blue-400' }
+  ],
+
+  // 监控设备
+  monitoringEquipment: [
+    { name: '双光谱云台', total: 48, online: 48, icon: 'Camera', color: 'text-purple-400' },
+    { name: '高清视频', total: 27, online: 22, icon: 'Video', color: 'text-blue-400' },
+    { name: '智能卡口', total: 37, online: 36, icon: 'Scan', color: 'text-cyan-400' },
+    { name: '三方视频', total: 254, online: 253, icon: 'Monitor', color: 'text-green-400' }
+  ]
+}
+
+// 图标组件映射
+const ResourceIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
+  const icons: Record<string, React.ComponentType<{ className?: string }>> = {
+    Building: Shield,
+    Eye: Eye,
+    Droplets: Droplet,
+    Shield: Shield,
+    Package: Package,
+    Minus: Minus,
+    Waves: Waves,
+    Zap: Zap,
+    Droplet: Droplet,
+    MapPin: MapPin,
+    Water: Droplet,
+    Cross: X,
+    CloudLightning: CloudLightning,
+    Plug: Plug,
+    Tower: Activity,
+    Flame: Flame,
+    Home: HomeIcon,
+    Camera: Camera,
+    Video: Video,
+    Scan: Scan,
+    Monitor: Video
+  }
+
+  const Icon = icons[iconName] || Shield
+  return <Icon className={className} />
+}
+
+function ForestFireOverview() {
+  const [selectedYear, setSelectedYear] = useState('2025')
+  const [showYearDropdown, setShowYearDropdown] = useState(false)
+
+  const yearOptions = ['2025', '2024', '2023']
+
+  return (
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
+      {/* 顶部标题栏 */}
+      <div className="flex-shrink-0 px-6 py-3 border-b border-gray-700/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Flame className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">森林防火综合展示</h1>
+              <div className="text-xs text-gray-400">Forest Fire Comprehensive Overview</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 rounded-lg border border-green-500/30">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <span className="text-sm text-green-400">系统运行正常</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 主内容区 */}
+      <div className="flex-1 flex gap-3 p-3 overflow-hidden">
+        {/* 左侧面板 */}
+        <div className="w-[340px] flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
+          {/* 防火队伍 */}
+          <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="w-5 h-5 text-blue-400" />
+              <h3 className="text-sm font-semibold text-gray-300">防火队伍</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-blue-400" />
+                  <span className="text-sm text-gray-300">区级专业队</span>
+                </div>
+                <span className="text-2xl font-bold text-blue-400">{forestFireOverviewData.fireTeams.professional}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-cyan-400" />
+                  <span className="text-sm text-gray-300">半专业队</span>
+                </div>
+                <span className="text-2xl font-bold text-cyan-400">{forestFireOverviewData.fireTeams.semiProfessional}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 防灭火资源 */}
+          <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4 flex-1">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-5 h-5 text-green-400" />
+              <h3 className="text-sm font-semibold text-gray-300">防灭火资源</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {forestFireOverviewData.fireResources.map((resource, index) => (
+                <div key={index} className="flex items-center gap-2 p-3 bg-gray-700/30 rounded-lg border border-gray-600/30">
+                  <ResourceIcon iconName={resource.icon} className={`w-5 h-5 ${resource.color} flex-shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-400 truncate">{resource.name}</div>
+                    <div className={`text-lg font-bold ${resource.color}`}>{resource.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 中央地图区域 */}
+        <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+          {/* 地图容器 */}
+          <div className="flex-1 bg-gradient-to-br from-gray-800/40 to-gray-900/40 rounded-xl border border-gray-700/30 overflow-hidden relative">
+            {/* 地图背景 */}
+            <img
+              src="/地图背景-保护地基本概况用.png"
+              alt="森林防火分布图"
+              className="absolute inset-0 w-full h-full object-cover opacity-60"
+            />
+
+            {/* 渐变遮罩 */}
+            <div className="absolute inset-0 bg-gradient-to-b from-orange-900/20 via-transparent to-orange-900/40" />
+
+            {/* 模拟设施点位分布 */}
+            <div className="absolute top-[20%] left-[30%]">
+              <div className="flex flex-col gap-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50" style={{animationDelay: '0.5s'}}></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50" style={{animationDelay: '1s'}}></div>
+              </div>
+            </div>
+
+            <div className="absolute top-[40%] left-[60%]">
+              <div className="flex flex-col gap-1">
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50"></div>
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50" style={{animationDelay: '0.3s'}}></div>
+              </div>
+            </div>
+
+            <div className="absolute top-[60%] left-[40%]">
+              <div className="flex flex-col gap-1">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50"></div>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50" style={{animationDelay: '0.7s'}}></div>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50" style={{animationDelay: '1.2s'}}></div>
+              </div>
+            </div>
+
+            <div className="absolute top-[30%] left-[50%]">
+              <div className="w-4 h-4 bg-yellow-500 rounded-full animate-pulse shadow-lg shadow-yellow-500/50"></div>
+            </div>
+
+            {/* 地图标题 */}
+            <div className="absolute top-3 right-3 bg-gray-900/90 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-700/50">
+              <div className="text-sm font-semibold text-gray-200">石花洞风景名胜区森林防火分布图</div>
+            </div>
+
+            {/* 图例 */}
+            <div className="absolute bottom-3 left-3 bg-gray-900/90 backdrop-blur-sm rounded-xl p-3 border border-gray-700/50">
+              <div className="text-xs font-semibold text-gray-300 mb-2">图例</div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-400">防灭火资源</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span className="text-xs text-gray-400">防火隐患</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-xs text-gray-400">监控设备</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <span className="text-xs text-gray-400">防火队伍</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 监控设备 - 地图下方 */}
+          <div className="h-auto bg-gray-800/60 rounded-xl border border-gray-700/50 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Video className="w-4 h-4 text-purple-400" />
+              <h3 className="text-xs font-semibold text-gray-300">监控设备</h3>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {forestFireOverviewData.monitoringEquipment.map((equipment, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-gray-700/30 rounded-lg border border-gray-600/30">
+                  <ResourceIcon iconName={equipment.icon} className={`w-5 h-5 ${equipment.color} flex-shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-400 truncate">{equipment.name}</div>
+                    <div className={`text-base font-bold ${equipment.color}`}>
+                      {equipment.online}
+                      <span className="text-xs text-gray-500">/{equipment.total}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 右侧面板 */}
+        <div className="w-[340px] flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
+          {/* 防火工作成果 */}
+          <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-400" />
+                <h3 className="text-sm font-semibold text-gray-300">防火工作成果</h3>
+              </div>
+              <div className="relative">
+                <button
+                  onClick={() => setShowYearDropdown(!showYearDropdown)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700/50 hover:bg-gray-700 rounded-lg border border-gray-600/50 transition-colors"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-xs text-gray-300">{selectedYear}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showYearDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showYearDropdown && (
+                  <div className="absolute top-full right-0 mt-1 bg-gray-800 border border-gray-600/50 rounded-lg shadow-xl z-30 overflow-hidden">
+                    {yearOptions.map((year) => (
+                      <button
+                        key={year}
+                        onClick={() => {
+                          setSelectedYear(year)
+                          setShowYearDropdown(false)
+                        }}
+                        className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-700/50 transition-colors ${
+                          selectedYear === year ? 'bg-gray-700/50 text-orange-400' : 'text-gray-300'
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2 p-2.5 bg-red-500/10 rounded-lg border border-red-500/30">
+                <Flame className="w-8 h-8 text-red-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-400 mb-0.5">扑灭火灾</div>
+                  <div className="text-xl font-bold text-red-400 flex items-baseline gap-0.5 leading-tight">
+                    {forestFireOverviewData.achievements.firesExtinguished}
+                    <span className="text-xs font-normal text-gray-500">起</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                <AlertTriangle className="w-8 h-8 text-blue-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-400 mb-0.5">核查警报</div>
+                  <div className="text-xl font-bold text-blue-400 flex items-baseline gap-0.5 leading-tight">
+                    {forestFireOverviewData.achievements.alarmsVerified}
+                    <span className="text-xs font-normal text-gray-500">次</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 防火隐患 */}
+          <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4 flex-1">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+              <h3 className="text-sm font-semibold text-gray-300">防火隐患</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {forestFireOverviewData.fireHazards.map((hazard, index) => (
+                <div key={index} className="flex items-center gap-2 p-3 bg-gray-700/30 rounded-lg border border-gray-600/30">
+                  <ResourceIcon iconName={hazard.icon} className={`w-5 h-5 ${hazard.color} flex-shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-400 truncate">{hazard.name}</div>
+                    <div className={`text-lg font-bold ${hazard.color}`}>{hazard.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ========== 森林防火综合展示界面（白天模式） ==========
+function ForestFireOverviewLight() {
+  const [selectedYear, setSelectedYear] = useState('2025')
+  const [showYearDropdown, setShowYearDropdown] = useState(false)
+
+  const yearOptions = ['2025', '2024', '2023']
+
+  return (
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-100 overflow-hidden">
+      {/* 顶部标题栏 */}
+      <div className="flex-shrink-0 px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-md">
+              <Flame className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">森林防火综合展示</h1>
+              <div className="text-xs text-gray-500">Forest Fire Comprehensive Overview</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm text-green-600">系统运行正常</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 主内容区 */}
+      <div className="flex-1 flex gap-3 p-3 overflow-hidden">
+        {/* 左侧面板 */}
+        <div className="w-[340px] flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
+          {/* 防火队伍 */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="w-5 h-5 text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-700">防火队伍</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm text-gray-700">区级专业队</span>
+                </div>
+                <span className="text-2xl font-bold text-blue-600">{forestFireOverviewData.fireTeams.professional}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-cyan-50 rounded-lg border border-cyan-200">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-cyan-600" />
+                  <span className="text-sm text-gray-700">半专业队</span>
+                </div>
+                <span className="text-2xl font-bold text-cyan-600">{forestFireOverviewData.fireTeams.semiProfessional}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 防灭火资源 */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex-1">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-5 h-5 text-green-600" />
+              <h3 className="text-sm font-semibold text-gray-700">防灭火资源</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {forestFireOverviewData.fireResources.map((resource, index) => (
+                <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <ResourceIcon iconName={resource.icon} className={`w-5 h-5 ${resource.color.replace('400', '600')} flex-shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-500 truncate">{resource.name}</div>
+                    <div className={`text-lg font-bold ${resource.color.replace('400', '600')}`}>{resource.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 中央地图区域 */}
+        <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+          {/* 地图容器 */}
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden relative">
+            {/* 地图背景 */}
+            <img
+              src="/地图背景-保护地基本概况用.png"
+              alt="森林防火分布图"
+              className="absolute inset-0 w-full h-full object-cover opacity-80"
+            />
+
+            {/* 渐变遮罩 */}
+            <div className="absolute inset-0 bg-gradient-to-b from-orange-100/30 via-transparent to-orange-100/50" />
+
+            {/* 模拟设施点位分布 */}
+            <div className="absolute top-[20%] left-[30%]">
+              <div className="flex flex-col gap-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg"></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg" style={{animationDelay: '0.5s'}}></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-lg" style={{animationDelay: '1s'}}></div>
+              </div>
+            </div>
+
+            <div className="absolute top-[40%] left-[60%]">
+              <div className="flex flex-col gap-1">
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-lg"></div>
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-lg" style={{animationDelay: '0.3s'}}></div>
+              </div>
+            </div>
+
+            <div className="absolute top-[60%] left-[40%]">
+              <div className="flex flex-col gap-1">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg"></div>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg" style={{animationDelay: '0.7s'}}></div>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-lg" style={{animationDelay: '1.2s'}}></div>
+              </div>
+            </div>
+
+            <div className="absolute top-[30%] left-[50%]">
+              <div className="w-4 h-4 bg-yellow-500 rounded-full animate-pulse shadow-lg"></div>
+            </div>
+
+            {/* 地图标题 */}
+            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-2 shadow-sm border border-gray-200">
+              <div className="text-sm font-semibold text-gray-700">石花洞风景名胜区森林防火分布图</div>
+            </div>
+
+            {/* 图例 */}
+            <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-200">
+              <div className="text-xs font-semibold text-gray-700 mb-2">图例</div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-600">防灭火资源</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span className="text-xs text-gray-600">防火隐患</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-xs text-gray-600">监控设备</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <span className="text-xs text-gray-600">防火队伍</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 监控设备 - 地图下方 */}
+          <div className="h-auto bg-white rounded-xl border border-gray-200 shadow-sm p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Video className="w-4 h-4 text-purple-600" />
+              <h3 className="text-xs font-semibold text-gray-700">监控设备</h3>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {forestFireOverviewData.monitoringEquipment.map((equipment, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                  <ResourceIcon iconName={equipment.icon} className={`w-5 h-5 ${equipment.color.replace('400', '600')} flex-shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-500 truncate">{equipment.name}</div>
+                    <div className={`text-base font-bold ${equipment.color.replace('400', '600')}`}>
+                      {equipment.online}
+                      <span className="text-xs text-gray-500">/{equipment.total}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 右侧面板 */}
+        <div className="w-[340px] flex-shrink-0 flex flex-col gap-3 overflow-y-auto">
+          {/* 防火工作成果 */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-600" />
+                <h3 className="text-sm font-semibold text-gray-700">防火工作成果</h3>
+              </div>
+              <div className="relative">
+                <button
+                  onClick={() => setShowYearDropdown(!showYearDropdown)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 transition-colors"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                  <span className="text-xs text-gray-700">{selectedYear}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform ${showYearDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showYearDropdown && (
+                  <div className="absolute top-full right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-30 overflow-hidden">
+                    {yearOptions.map((year) => (
+                      <button
+                        key={year}
+                        onClick={() => {
+                          setSelectedYear(year)
+                          setShowYearDropdown(false)
+                        }}
+                        className={`w-full px-3 py-2 text-left text-xs hover:bg-gray-100 transition-colors ${
+                          selectedYear === year ? 'bg-gray-100 text-orange-600' : 'text-gray-700'
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2 p-2.5 bg-red-50 rounded-lg border border-red-200">
+                <Flame className="w-8 h-8 text-red-600 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-500 mb-0.5">扑灭火灾</div>
+                  <div className="text-xl font-bold text-red-600 flex items-baseline gap-0.5 leading-tight">
+                    {forestFireOverviewData.achievements.firesExtinguished}
+                    <span className="text-xs font-normal text-gray-500">起</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2.5 bg-blue-50 rounded-lg border border-blue-200">
+                <AlertTriangle className="w-8 h-8 text-blue-600 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-500 mb-0.5">核查警报</div>
+                  <div className="text-xl font-bold text-blue-600 flex items-baseline gap-0.5 leading-tight">
+                    {forestFireOverviewData.achievements.alarmsVerified}
+                    <span className="text-xs font-normal text-gray-500">次</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 防火隐患 */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex-1">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              <h3 className="text-sm font-semibold text-gray-700">防火隐患</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {forestFireOverviewData.fireHazards.map((hazard, index) => (
+                <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <ResourceIcon iconName={hazard.icon} className={`w-5 h-5 ${hazard.color.replace('400', '600')} flex-shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-500 truncate">{hazard.name}</div>
+                    <div className={`text-lg font-bold ${hazard.color.replace('400', '600')}`}>{hazard.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ========== 森林防火监测预警界面 ==========
+
+// 森林防火监测预警数据
+const forestFireMonitoringData = {
+  // 报警记录
+  alarmRecords: [
+    { id: 1, title: '石花洞景区北侧烟雾报警', time: '2025-03-26 09:23:15', type: '涉林火情', status: '未处理', isTimeout: false, isViewed: false, isVerified: false, device: '双光谱云台-05', latitude: '39.7245', longitude: '115.8923', grid: 'A区网格01', alarmImage: '/alarm-sample.jpg', alarmVideo: '/alarm-clip.mp4' },
+    { id: 2, title: '停车场西侧热源报警', time: '2025-03-26 08:45:32', type: '非涉林火情', status: '已核实', isTimeout: false, isViewed: true, isVerified: true, device: '高清视频-12', latitude: '39.7201', longitude: '115.8901', grid: 'B区网格03', alarmImage: '/alarm-sample.jpg', alarmVideo: '/alarm-clip.mp4' },
+    { id: 3, title: '核心区东侧温度异常', time: '2025-03-26 07:12:08', type: '误报', status: '已查看', isTimeout: false, isViewed: true, isVerified: false, device: '双光谱云台-03', latitude: '39.7256', longitude: '115.8856', grid: 'A区网格02', alarmImage: '/alarm-sample.jpg', alarmVideo: '/alarm-clip.mp4' },
+    { id: 4, title: '步道北段烟雾检测', time: '2025-03-25 18:30:45', type: '涉林火情', status: '未处理', isTimeout: true, isViewed: false, isVerified: false, device: '智能卡口-08', latitude: '39.7212', longitude: '115.8812', grid: 'C区网格05', alarmImage: '/alarm-sample.jpg', alarmVideo: '/alarm-clip.mp4' },
+    { id: 5, title: '缓冲区西段红外报警', time: '2025-03-25 15:20:18', type: '涉林火情', status: '已核实', isTimeout: false, isViewed: true, isVerified: true, device: '双光谱云台-07', latitude: '39.7245', longitude: '115.8834', grid: 'B区网格04', alarmImage: '/alarm-sample.jpg', alarmVideo: '/alarm-clip.mp4' }
+  ],
+
+  // 网格人员
+  gridPersonnel: [
+    { id: 1, name: '张伟', phone: '13800138001', position: '网格长', unit: '石花洞管理处', avatar: '/avatar-sample.jpg' },
+    { id: 2, name: '李明', phone: '13800138002', position: '护林员', unit: '石花洞管理处', avatar: '/avatar-sample.jpg' },
+    { id: 3, name: '王强', phone: '13800138003', position: '网格长', unit: '房山区园林绿化局', avatar: '/avatar-sample.jpg' },
+    { id: 4, name: '刘洋', phone: '13800138004', position: '护林员', unit: '房山区园林绿化局', avatar: '/avatar-sample.jpg' }
+  ]
+}
+
+function ForestFireMonitoring() {
+  // 状态管理
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [selectedType, setSelectedType] = useState<string | null>(null) // 涉林火情、非涉林火情、误报
+  const [selectedTab, setSelectedTab] = useState('全部') // 全部、已查看、已核实、未处理
+  const [timeoutFilter, setTimeoutFilter] = useState<string | null>(null) // 已超时、未超时
+  const [selectedAlarm, setSelectedAlarm] = useState<typeof forestFireMonitoringData.alarmRecords[0] | null>(null)
+  const [showDrawer, setShowDrawer] = useState(false)
+  const [selectedMapPoint, setSelectedMapPoint] = useState<string | null>(null)
+
+  // 统计数据
+  const stats = {
+    forestFire: forestFireMonitoringData.alarmRecords.filter(a => a.type === '涉林火情').length,
+    nonForestFire: forestFireMonitoringData.alarmRecords.filter(a => a.type === '非涉林火情').length,
+    falseAlarm: forestFireMonitoringData.alarmRecords.filter(a => a.type === '误报').length,
+    all: forestFireMonitoringData.alarmRecords.length,
+    viewed: forestFireMonitoringData.alarmRecords.filter(a => a.isViewed).length,
+    verified: forestFireMonitoringData.alarmRecords.filter(a => a.isVerified).length,
+    unprocessed: forestFireMonitoringData.alarmRecords.filter(a => a.status === '未处理').length
+  }
+
+  // 筛选后的报警列表
+  const filteredAlarms = forestFireMonitoringData.alarmRecords.filter(alarm => {
+    if (selectedType && alarm.type !== selectedType) return false
+    if (selectedTab === '已查看' && !alarm.isViewed) return false
+    if (selectedTab === '已核实' && !alarm.isVerified) return false
+    if (selectedTab === '未处理' && alarm.status !== '未处理') return false
+    if (timeoutFilter === '已超时' && !alarm.isTimeout) return false
+    if (timeoutFilter === '未超时' && alarm.isTimeout) return false
+    return true
+  })
+
+  // 处理报警卡片点击
+  const handleAlarmClick = (alarm: typeof forestFireMonitoringData.alarmRecords[0]) => {
+    setSelectedAlarm(alarm)
+    setShowDrawer(true)
+    setSelectedMapPoint(alarm.id.toString())
+  }
+
+  // 处理地图点位点击
+  const handleMapPointClick = (alarmId: string) => {
+    const alarm = forestFireMonitoringData.alarmRecords.find(a => a.id.toString() === alarmId)
+    if (alarm) {
+      setSelectedAlarm(alarm)
+      setShowDrawer(true)
+      setSelectedMapPoint(alarmId)
+    }
+  }
+
+  // 格式化日期
+  const formatDate = (date: Date) => {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+  }
+
+  return (
+    <div className="h-full relative overflow-hidden bg-gray-50">
+      {/* 地图底图 - 使用巡护监管的底图 */}
+      <div className="absolute inset-0">
+        <img
+          src="/map-bg.png"
+          alt="地图底图"
+          className="w-full h-full object-cover"
+          style={{ objectFit: 'fill' }}
+        />
+      </div>
+
+      {/* 地图点位 */}
+      <div className="absolute inset-0 pointer-events-none">
+        {forestFireMonitoringData.alarmRecords.map((alarm) => {
+          const isSelected = selectedMapPoint === alarm.id.toString()
+          return (
+            <div
+              key={alarm.id}
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer pointer-events-auto"
+              style={{
+                top: `${30 + alarm.id * 8}%`,
+                left: `${20 + alarm.id * 12}%`,
+                zIndex: isSelected ? 20 : 10
+              }}
+              onClick={() => handleMapPointClick(alarm.id.toString())}
+            >
+              {/* 脉冲动画 - 选中时显示 */}
+              {isSelected && (
+                <div className="absolute inset-0 rounded-full animate-ping bg-orange-500 opacity-30" style={{ transform: 'scale(1.5)' }} />
+              )}
+
+              {/* 点位图标 */}
+              <div className={`w-4 h-4 rounded-full border-2 ${
+                alarm.type === '涉林火情' ? 'bg-red-500 border-red-300' :
+                alarm.type === '非涉林火情' ? 'bg-yellow-500 border-yellow-300' :
+                'bg-gray-500 border-gray-300'
+              } ${isSelected ? 'ring-4 ring-orange-400 shadow-lg' : ''}`} />
+
+              {/* 序号 */}
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-600 rounded-full text-white text-xs flex items-center justify-center font-bold">
+                {alarm.id}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 左侧浮动卡片 - 本日报警记录 */}
+      <div className="absolute top-4 left-4 w-80 max-h-[calc(100vh-2rem)] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+        {/* 标题栏 */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-white">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-600" />
+            <h3 className="font-semibold text-gray-800">本日报警记录</h3>
+          </div>
+          <button
+            onClick={() => setShowDatePicker(!showDatePicker)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 transition-colors"
+          >
+            <Calendar className="w-3.5 h-3.5 text-gray-600" />
+            <span className="text-gray-700">{formatDate(selectedDate)}</span>
+          </button>
+        </div>
+
+        {showDatePicker && (
+          <div className="absolute top-14 left-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-3">
+            <input
+              type="date"
+              value={selectedDate.toISOString().split('T')[0]}
+              onChange={(e) => {
+                setSelectedDate(new Date(e.target.value))
+                setShowDatePicker(false)
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            />
+          </div>
+        )}
+
+        {/* 统计卡片 */}
+        <div className="grid grid-cols-3 gap-2 p-3 border-b border-gray-200">
+          <button
+            onClick={() => setSelectedType(selectedType === '涉林火情' ? null : '涉林火情')}
+            className={`p-2 rounded-lg border transition-all text-center ${
+              selectedType === '涉林火情'
+                ? 'bg-red-500 border-red-600 text-white shadow-md'
+                : 'bg-red-50 border-red-200 hover:bg-red-100'
+            }`}
+          >
+            <div className="text-lg font-bold">{stats.forestFire}</div>
+            <div className="text-xs">涉林火情</div>
+          </button>
+          <button
+            onClick={() => setSelectedType(selectedType === '非涉林火情' ? null : '非涉林火情')}
+            className={`p-2 rounded-lg border transition-all text-center ${
+              selectedType === '非涉林火情'
+                ? 'bg-yellow-500 border-yellow-600 text-white shadow-md'
+                : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
+            }`}
+          >
+            <div className="text-lg font-bold">{stats.nonForestFire}</div>
+            <div className="text-xs">非涉林</div>
+          </button>
+          <button
+            onClick={() => setSelectedType(selectedType === '误报' ? null : '误报')}
+            className={`p-2 rounded-lg border transition-all text-center ${
+              selectedType === '误报'
+                ? 'bg-gray-500 border-gray-600 text-white shadow-md'
+                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+            }`}
+          >
+            <div className="text-lg font-bold">{stats.falseAlarm}</div>
+            <div className="text-xs">误报</div>
+          </button>
+        </div>
+
+        {/* 页签和筛选 */}
+        <div className="px-3 py-2 border-b border-gray-200">
+          {/* 页签 */}
+          <div className="flex gap-1 mb-2">
+            {['全部', '已查看', '已核实', '未处理'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setSelectedTab(tab)}
+                className={`flex-1 px-2 py-1.5 text-xs rounded-lg transition-all ${
+                  selectedTab === tab
+                    ? 'bg-orange-500 text-white font-medium'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {tab}
+                <span className="ml-1 opacity-75">
+                  {tab === '全部' ? stats.all :
+                   tab === '已查看' ? stats.viewed :
+                   tab === '已核实' ? stats.verified : stats.unprocessed}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* 超时筛选 */}
+          <div className="flex gap-1">
+            <button
+              onClick={() => setTimeoutFilter(timeoutFilter === '已超时' ? null : '已超时')}
+              className={`flex-1 px-2 py-1 text-xs rounded transition-all ${
+                timeoutFilter === '已超时'
+                  ? 'bg-red-100 text-red-700 border border-red-300'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent'
+              }`}
+            >
+              已超时
+            </button>
+            <button
+              onClick={() => setTimeoutFilter(timeoutFilter === '未超时' ? null : '未超时')}
+              className={`flex-1 px-2 py-1 text-xs rounded transition-all ${
+                timeoutFilter === '未超时'
+                  ? 'bg-green-100 text-green-700 border border-green-300'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent'
+              }`}
+            >
+              未超时
+            </button>
+          </div>
+        </div>
+
+        {/* 报警列表 */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {filteredAlarms.map((alarm) => (
+            <div
+              key={alarm.id}
+              onClick={() => handleAlarmClick(alarm)}
+              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                selectedMapPoint === alarm.id.toString()
+                  ? 'border-orange-500 bg-orange-50 shadow-md'
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <h4 className="text-sm font-medium text-gray-800 flex-1 line-clamp-2">{alarm.title}</h4>
+                <span className={`text-xs px-2 py-0.5 rounded-full ml-2 flex-shrink-0 ${
+                  alarm.status === '已核实' ? 'bg-green-100 text-green-700' :
+                  alarm.status === '已查看' ? 'bg-blue-100 text-blue-700' :
+                  alarm.isTimeout ? 'bg-red-100 text-red-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {alarm.status}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>{alarm.time.split(' ')[1]}</span>
+                <span className={alarm.type === '涉林火情' ? 'text-red-600' : 'text-gray-600'}>
+                  {alarm.type}
+                </span>
+              </div>
+            </div>
+          ))}
+          {filteredAlarms.length === 0 && (
+            <div className="text-center py-8 text-gray-400 text-sm">
+              暂无报警记录
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 右侧浮动卡片 */}
+      <div className="absolute top-4 right-4 w-72 space-y-3">
+        {/* 森林火灾等级 */}
+        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white">
+            <h3 className="font-semibold text-gray-800 text-sm">森林火灾等级</h3>
+          </div>
+          <div className="p-3">
+            <img
+              src="/火灾风险.jpg"
+              alt="森林火灾等级"
+              className="w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => {/* 可以添加放大查看功能 */}}
+            />
+          </div>
+        </div>
+
+        {/* 监控设备 */}
+        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-white">
+            <h3 className="font-semibold text-gray-800 text-sm">监控设备</h3>
+          </div>
+          <div className="p-3 space-y-2">
+            {forestFireOverviewData.monitoringEquipment.map((equipment, index) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <ResourceIcon iconName={equipment.icon} className={`w-4 h-4 ${equipment.color}`} />
+                  <span className="text-xs text-gray-700">{equipment.name}</span>
+                </div>
+                <span className={`text-sm font-bold ${equipment.color}`}>
+                  {equipment.online}
+                  <span className="text-xs text-gray-500">/{equipment.total}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 无人机画面 */}
+        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+            <h3 className="font-semibold text-gray-800 text-sm">无人机画面</h3>
+          </div>
+          <div className="p-3">
+            <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center relative overflow-hidden">
+              <video
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+              >
+                <source src="/drone-video.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
+                实时画面
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 抽屉弹窗 - 详情 */}
+      {showDrawer && selectedAlarm && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex"
+          onClick={() => {
+            setShowDrawer(false)
+            setSelectedAlarm(null)
+            setSelectedMapPoint(null)
+          }}
+        >
+          <div
+            className="absolute right-0 top-0 bottom-0 w-[500px] bg-white shadow-2xl overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">报警详情</h2>
+                <p className="text-sm text-gray-500 mt-1">{selectedAlarm.title}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDrawer(false)
+                  setSelectedAlarm(null)
+                  setSelectedMapPoint(null)
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            {/* 相关信息 - 视频/图片 */}
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">相关信息</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {/* 实时监控画面 */}
+                <div className="col-span-2 aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                  <video
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  >
+                    <source src="/monitoring-video.mp4" type="video/mp4" />
+                  </video>
+                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
+                    实时监控画面
+                  </div>
+                </div>
+
+                {/* 报警图片 */}
+                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-90">
+                  <img
+                    src={selectedAlarm.alarmImage}
+                    alt="报警图片"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
+                    报警图片
+                  </div>
+                </div>
+
+                {/* 报警视频片段 */}
+                <div className="aspect-square bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:opacity-90">
+                  <video
+                    className="w-full h-full object-cover"
+                    controls
+                  >
+                    <source src={selectedAlarm.alarmVideo} type="video/mp4" />
+                  </video>
+                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
+                    报警视频
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 基本信息 */}
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-xs text-gray-500">报警时间</span>
+                  <p className="text-sm text-gray-800 mt-1">{selectedAlarm.time}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">报警设备</span>
+                  <p className="text-sm text-gray-800 mt-1">{selectedAlarm.device}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">经纬度</span>
+                  <p className="text-sm text-gray-800 mt-1">{selectedAlarm.latitude}, {selectedAlarm.longitude}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">所属网格</span>
+                  <p className="text-sm text-gray-800 mt-1">{selectedAlarm.grid}</p>
+                </div>
+              </div>
+
+              {/* 网格人员 */}
+              <div>
+                <span className="text-xs text-gray-500">网格人员</span>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  {forestFireMonitoringData.gridPersonnel.slice(0, 2).map((person) => (
+                    <div key={person.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                      <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">{person.name}</p>
+                        <p className="text-xs text-gray-500">{person.phone}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 处置进度 */}
+              <div>
+                <span className="text-xs text-gray-500">处置进度</span>
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-gray-700">
+                      {selectedAlarm.isViewed ? '已查看' : '未查看'} - 系统管理员
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    {selectedAlarm.isVerified ? (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-yellow-500" />
+                    )}
+                    <span className="text-gray-700">
+                      {selectedAlarm.isVerified ? '已核实' : '待核实'} - {selectedAlarm.isVerified ? '张伟' : '等待确认'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ========== 森林防火指挥调度界面 ==========
+function ForestFireCommand() {
+  return (
+    <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Flame className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">森林防火指挥调度</h2>
+        <p className="text-gray-500">界面内容待添加</p>
+      </div>
+    </div>
+  )
+}
+
+// ========== 森林防火历史数据界面 ==========
+function ForestFireHistory() {
+  return (
+    <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Flame className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">森林防火历史数据</h2>
+        <p className="text-gray-500">界面内容待添加</p>
+      </div>
+    </div>
+  )
+}
+
+// ========== 森林防火防火资源界面 ==========
+function ForestFireResource() {
+  return (
+    <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Flame className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">森林防火资源</h2>
+        <p className="text-gray-500">界面内容待添加</p>
+      </div>
+    </div>
+  )
+}
+
+// ========== 森林防火统计分析界面 ==========
+function ForestFireStats() {
+  return (
+    <div className="h-full flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Flame className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">森林防火统计分析</h2>
+        <p className="text-gray-500">界面内容待添加</p>
+      </div>
+    </div>
+  )
+}
+
 // ========== 人类活动实时监控界面 ==========
 // 监控设备数据
 const surveillanceCameras = [
@@ -4835,14 +6000,14 @@ export default function Home() {
   const toggleExpand = (id: string, level: number) => {
     setExpandedItems(prev => {
       const isCurrentlyExpanded = prev.includes(id)
-      
+
       if (isCurrentlyExpanded) {
         // 折叠当前项
         return prev.filter(item => item !== id)
       } else {
         // 展开当前项
         let newExpanded = [...prev, id]
-        
+
         if (level === 0) {
           // 展开一级模块时，折叠其他所有一级模块
           newExpanded = newExpanded.filter(item => !level0Ids.includes(item) || item === id)
@@ -4857,7 +6022,7 @@ export default function Home() {
             newExpanded = newExpanded.filter(item => !siblingIds.includes(item) || item === id)
           }
         }
-        
+
         return newExpanded
       }
     })
@@ -6278,6 +7443,41 @@ export default function Home() {
           {/* 地质数据管理界面 */}
           {selectedId === 'geology-data' && (
             <div className="h-full -m-4"><GeologyDataManagement /></div>
+          )}
+
+          {/* 森林防火综合展示界面 */}
+          {selectedId === 'forest-overview' && (
+            <div className="h-full -m-4"><ForestFireOverview /></div>
+          )}
+
+          {/* 森林防火综合展示界面（白天模式） */}
+          {selectedId === 'forest-overview-light' && (
+            <div className="h-full -m-4"><ForestFireOverviewLight /></div>
+          )}
+
+          {/* 森林防火监测预警界面 */}
+          {selectedId === 'forest-monitoring' && (
+            <div className="h-full -m-4"><ForestFireMonitoring /></div>
+          )}
+
+          {/* 森林防火指挥调度界面 */}
+          {selectedId === 'forest-command' && (
+            <div className="h-full -m-4"><ForestFireCommand /></div>
+          )}
+
+          {/* 森林防火历史数据界面 */}
+          {selectedId === 'forest-history' && (
+            <div className="h-full -m-4"><ForestFireHistory /></div>
+          )}
+
+          {/* 森林防火防火资源界面 */}
+          {selectedId === 'forest-resource' && (
+            <div className="h-full -m-4"><ForestFireResource /></div>
+          )}
+
+          {/* 森林防火统计分析界面 */}
+          {selectedId === 'forest-stats' && (
+            <div className="h-full -m-4"><ForestFireStats /></div>
           )}
 
           {/* 人类活动实时监控界面 */}
