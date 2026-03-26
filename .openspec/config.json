@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "project": {
+    "name": "nextjs_tailwind_shadcn_ts",
+    "type": "nextjs",
+    "description": "Modern web application scaffold with Next.js, TypeScript, Tailwind CSS, and shadcn/ui"
+  },
+  "workflow": {
+    "enabled": true,
+    "directories": {
+      "changes": ".openspec/changes",
+      "proposals": ".openspec/proposals",
+      "archived": ".openspec/archived"
+    },
+    "templates": {
+      "proposal": ".openspec/templates/proposal.md",
+      "change": ".openspec/templates/change.md"
+    }
+  },
+  "features": {
+    "autoTracking": true,
+    "versionControl": "git",
+    "documentation": true
+  }
+}
