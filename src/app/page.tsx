@@ -47,6 +47,7 @@ import {
   Video,
   Clock,
   Star,
+  Check,
   CheckCircle,
   Play,
   Mic,
@@ -82,19 +83,21 @@ import {
   CloudLightning,
   Plug,
   Home as HomeIcon,
-  Scan
+  Scan,
+  Tag,
+  Trophy
 } from 'lucide-react'
 
 // 从组件目录导入
 import { InfraredCameraDeployment, InfraredAchievementDisplay } from '@/components/infrared'
 import { GeologyResourceInterface } from '@/components/geology'
-import { HumanActivityRealtimeInterface, HumanActivityRealtimeLight, HumanActivityHistoryInterface, FullscreenVideoModal, FullscreenMapModal } from '@/components/human'
+import { HumanActivityRealtimeInterface, HumanActivityRealtimeLight, HumanActivityHistoryInterface, HumanActivityDeviceManagement, FullscreenVideoModal, FullscreenMapModal } from '@/components/human'
 import { PatrolRealtimeInterface, PatrolStatsAssessment } from '@/components/patrol'
 import { ImageMonitorInterface } from '@/components/videoMonitor'
 import { AcousticMonitorInterface } from '@/components/acoustic'
 import { AIChatBot } from '@/components/ai-chat'
 import { EcologyDataManagement, EcologyRealtimeMonitor, EcologyRealtimeMonitorLight, EcologicalStatsAnalysis, EcologicalDeviceManagement } from '@/components/ecology'
-import { TourismRealtimeInterface, TourismRealtimeLight } from '@/components/tourism'
+import { TourismRealtimeInterface, TourismRealtimeLight, TourismDeviceManagement } from '@/components/tourism'
 
 // 从数据文件导入
 import { videoMonitorPoints } from '@/data/videoMonitorData'
@@ -4333,7 +4336,7 @@ const forestFireOverviewData = {
 
   // 防火工作成果（2025年）
   achievements: {
-    firesExtinguished: 25,     // 扑灭火灾
+    firesExtinguished: 25,     // 防火巡查
     alarmsVerified: 589        // 核查警报
   },
 
@@ -4601,10 +4604,10 @@ function ForestFireOverview() {
               <div className="flex items-center gap-2 p-2.5 bg-red-500/10 rounded-lg border border-red-500/30">
                 <Flame className="w-8 h-8 text-red-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-gray-400 mb-0.5">扑灭火灾</div>
+                  <div className="text-xs text-gray-400 mb-0.5">防火巡查</div>
                   <div className="text-xl font-bold text-red-400 flex items-baseline gap-0.5 leading-tight">
                     {forestFireOverviewData.achievements.firesExtinguished}
-                    <span className="text-xs font-normal text-gray-500">起</span>
+                    <span className="text-xs font-normal text-gray-500">次</span>
                   </div>
                 </div>
               </div>
@@ -4860,10 +4863,10 @@ function ForestFireOverviewLight() {
               <div className="flex items-center gap-2 p-2.5 bg-red-50 rounded-lg border border-red-200">
                 <Flame className="w-8 h-8 text-red-600 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-gray-500 mb-0.5">扑灭火灾</div>
+                  <div className="text-xs text-gray-500 mb-0.5">防火巡查</div>
                   <div className="text-xl font-bold text-red-600 flex items-baseline gap-0.5 leading-tight">
                     {forestFireOverviewData.achievements.firesExtinguished}
-                    <span className="text-xs font-normal text-gray-500">起</span>
+                    <span className="text-xs font-normal text-gray-500">次</span>
                   </div>
                 </div>
               </div>
@@ -4936,6 +4939,10 @@ function ForestFireMonitoring() {
   const [selectedAlarm, setSelectedAlarm] = useState<typeof forestFireMonitoringData.alarmRecords[0] | null>(null)
   const [showDrawer, setShowDrawer] = useState(false)
   const [selectedMapPoint, setSelectedMapPoint] = useState<string | null>(null)
+  const [showFireRiskImage, setShowFireRiskImage] = useState(false) // 火灾风险图片放大查看
+  const [selectedDevice, setSelectedDevice] = useState<typeof forestFireOverviewData.monitoringEquipment[0] | null>(null) // 选中的监控设备
+  const [showDeviceModal, setShowDeviceModal] = useState(false) // 监控设备弹窗
+  const [showDroneModal, setShowDroneModal] = useState(false) // 无人机画面弹窗
 
   // 统计数据
   const stats = {
@@ -4976,6 +4983,17 @@ function ForestFireMonitoring() {
     }
   }
 
+  // 处理监控设备点位点击
+  const handleDevicePointClick = (equipment: typeof forestFireOverviewData.monitoringEquipment[0]) => {
+    setSelectedDevice(equipment)
+    setShowDeviceModal(true)
+  }
+
+  // 处理无人机画面点击
+  const handleDroneViewClick = () => {
+    setShowDroneModal(true)
+  }
+
   // 格式化日期
   const formatDate = (date: Date) => {
     return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
@@ -4995,6 +5013,7 @@ function ForestFireMonitoring() {
 
       {/* 地图点位 */}
       <div className="absolute inset-0 pointer-events-none">
+        {/* 报警点位 */}
         {forestFireMonitoringData.alarmRecords.map((alarm) => {
           const isSelected = selectedMapPoint === alarm.id.toString()
           return (
@@ -5003,7 +5022,7 @@ function ForestFireMonitoring() {
               className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer pointer-events-auto"
               style={{
                 top: `${30 + alarm.id * 8}%`,
-                left: `${20 + alarm.id * 12}%`,
+                left: alarm.id === 5 ? '55%' : `${20 + alarm.id * 12}%`,
                 zIndex: isSelected ? 20 : 10
               }}
               onClick={() => handleMapPointClick(alarm.id.toString())}
@@ -5013,41 +5032,70 @@ function ForestFireMonitoring() {
                 <div className="absolute inset-0 rounded-full animate-ping bg-orange-500 opacity-30" style={{ transform: 'scale(1.5)' }} />
               )}
 
-              {/* 点位图标 */}
-              <div className={`w-4 h-4 rounded-full border-2 ${
-                alarm.type === '涉林火情' ? 'bg-red-500 border-red-300' :
-                alarm.type === '非涉林火情' ? 'bg-yellow-500 border-yellow-300' :
-                'bg-gray-500 border-gray-300'
-              } ${isSelected ? 'ring-4 ring-orange-400 shadow-lg' : ''}`} />
+              {/* 点位图标 - 使用警告图标 */}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                alarm.type === '涉林火情' ? 'bg-red-500' :
+                alarm.type === '非涉林火情' ? 'bg-yellow-500' :
+                'bg-gray-500'
+              } ${isSelected ? 'ring-4 ring-orange-400 shadow-lg' : 'shadow-md'} border-2 border-white`}>
+                <AlertTriangle className="w-4 h-4 text-white" />
+              </div>
 
               {/* 序号 */}
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-600 rounded-full text-white text-xs flex items-center justify-center font-bold">
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-600 rounded-full text-white text-xs flex items-center justify-center font-bold border-2 border-white">
                 {alarm.id}
               </div>
             </div>
           )
         })}
+
+        {/* 监控设备点位 - 每类设备显示4个代表性点位 */}
+        {forestFireOverviewData.monitoringEquipment.map((equipment, eqIndex) => {
+          const basePositions = [
+            { top: 20, left: 30 },
+            { top: 35, left: 55 },
+            { top: 50, left: 25 },
+            { top: 70, left: 50 },
+          ]
+          return basePositions.map((pos, i) => (
+            <div
+              key={`device-${eqIndex}-${i}`}
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer hover:scale-125 transition-transform"
+              style={{
+                top: `${pos.top + eqIndex * 2}%`,
+                left: `${pos.left - (eqIndex % 2) * 5 + (i % 2) * 8}%`,
+                zIndex: 5
+              }}
+              title={equipment.name}
+              onClick={() => handleDevicePointClick(equipment)}
+            >
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-cyan-700/90 border-2 border-cyan-400 shadow-md`}>
+                <ResourceIcon iconName={equipment.icon} className="w-2.5 h-2.5 text-cyan-200" />
+              </div>
+            </div>
+          ))
+        }).flat()}
       </div>
 
       {/* 左侧浮动卡片 - 本日报警记录 */}
-      <div className="absolute top-4 left-4 w-80 max-h-[calc(100vh-2rem)] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+      <div className="absolute top-4 bottom-4 left-4 w-80 bg-teal-900/80 backdrop-blur-sm rounded-xl shadow-2xl border border-teal-700/50 flex flex-col overflow-hidden" style={{ zIndex: 30 }}>
         {/* 标题栏 */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-white">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-teal-700/50 bg-gradient-to-r from-teal-800/90 to-teal-900/90">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-orange-600" />
-            <h3 className="font-semibold text-gray-800">本日报警记录</h3>
+            <AlertTriangle className="w-5 h-5 text-orange-400" />
+            <h3 className="font-semibold text-gray-100">本日报警记录</h3>
           </div>
           <button
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm bg-teal-700/50 hover:bg-teal-700/70 rounded-lg border border-teal-600/50 transition-colors"
           >
-            <Calendar className="w-3.5 h-3.5 text-gray-600" />
-            <span className="text-gray-700">{formatDate(selectedDate)}</span>
+            <Calendar className="w-3.5 h-3.5 text-gray-200" />
+            <span className="text-gray-100">{formatDate(selectedDate)}</span>
           </button>
         </div>
 
         {showDatePicker && (
-          <div className="absolute top-14 left-4 right-4 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-3">
+          <div className="absolute top-14 left-4 right-4 bg-teal-800/95 backdrop-blur-sm border border-teal-600/50 rounded-lg shadow-xl z-50 p-3">
             <input
               type="date"
               value={selectedDate.toISOString().split('T')[0]}
@@ -5055,50 +5103,50 @@ function ForestFireMonitoring() {
                 setSelectedDate(new Date(e.target.value))
                 setShowDatePicker(false)
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-teal-600/50 rounded-lg text-sm bg-teal-700/50 text-gray-100"
             />
           </div>
         )}
 
         {/* 统计卡片 */}
-        <div className="grid grid-cols-3 gap-2 p-3 border-b border-gray-200">
+        <div className="grid grid-cols-3 gap-2 p-3 border-b border-teal-700/50">
           <button
             onClick={() => setSelectedType(selectedType === '涉林火情' ? null : '涉林火情')}
             className={`p-2 rounded-lg border transition-all text-center ${
               selectedType === '涉林火情'
-                ? 'bg-red-500 border-red-600 text-white shadow-md'
-                : 'bg-red-50 border-red-200 hover:bg-red-100'
+                ? 'bg-red-500 border-red-400 text-white shadow-md'
+                : 'bg-red-950/40 border-red-800/50 hover:bg-red-900/50 text-gray-100'
             }`}
           >
             <div className="text-lg font-bold">{stats.forestFire}</div>
-            <div className="text-xs">涉林火情</div>
+            <div className="text-xs text-gray-200">涉林火情</div>
           </button>
           <button
             onClick={() => setSelectedType(selectedType === '非涉林火情' ? null : '非涉林火情')}
             className={`p-2 rounded-lg border transition-all text-center ${
               selectedType === '非涉林火情'
-                ? 'bg-yellow-500 border-yellow-600 text-white shadow-md'
-                : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
+                ? 'bg-yellow-500 border-yellow-400 text-white shadow-md'
+                : 'bg-yellow-950/40 border-yellow-800/50 hover:bg-yellow-900/50 text-gray-100'
             }`}
           >
             <div className="text-lg font-bold">{stats.nonForestFire}</div>
-            <div className="text-xs">非涉林</div>
+            <div className="text-xs text-gray-200">非涉林</div>
           </button>
           <button
             onClick={() => setSelectedType(selectedType === '误报' ? null : '误报')}
             className={`p-2 rounded-lg border transition-all text-center ${
               selectedType === '误报'
-                ? 'bg-gray-500 border-gray-600 text-white shadow-md'
-                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                ? 'bg-gray-500 border-gray-400 text-white shadow-md'
+                : 'bg-gray-800/40 border-gray-700/50 hover:bg-gray-700/50 text-gray-100'
             }`}
           >
             <div className="text-lg font-bold">{stats.falseAlarm}</div>
-            <div className="text-xs">误报</div>
+            <div className="text-xs text-gray-200">误报</div>
           </button>
         </div>
 
         {/* 页签和筛选 */}
-        <div className="px-3 py-2 border-b border-gray-200">
+        <div className="px-3 py-2 border-b border-teal-700/50">
           {/* 页签 */}
           <div className="flex gap-1 mb-2">
             {['全部', '已查看', '已核实', '未处理'].map((tab) => (
@@ -5108,7 +5156,7 @@ function ForestFireMonitoring() {
                 className={`flex-1 px-2 py-1.5 text-xs rounded-lg transition-all ${
                   selectedTab === tab
                     ? 'bg-orange-500 text-white font-medium'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-teal-700/50 text-gray-200 hover:bg-teal-700/70'
                 }`}
               >
                 {tab}
@@ -5127,8 +5175,8 @@ function ForestFireMonitoring() {
               onClick={() => setTimeoutFilter(timeoutFilter === '已超时' ? null : '已超时')}
               className={`flex-1 px-2 py-1 text-xs rounded transition-all ${
                 timeoutFilter === '已超时'
-                  ? 'bg-red-100 text-red-700 border border-red-300'
-                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent'
+                  ? 'bg-red-900/60 text-red-200 border border-red-700/50'
+                  : 'bg-teal-700/30 text-gray-300 hover:bg-teal-700/50 border border-transparent'
               }`}
             >
               已超时
@@ -5137,8 +5185,8 @@ function ForestFireMonitoring() {
               onClick={() => setTimeoutFilter(timeoutFilter === '未超时' ? null : '未超时')}
               className={`flex-1 px-2 py-1 text-xs rounded transition-all ${
                 timeoutFilter === '未超时'
-                  ? 'bg-green-100 text-green-700 border border-green-300'
-                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent'
+                  ? 'bg-green-900/60 text-green-200 border border-green-700/50'
+                  : 'bg-teal-700/30 text-gray-300 hover:bg-teal-700/50 border border-transparent'
               }`}
             >
               未超时
@@ -5147,31 +5195,31 @@ function ForestFireMonitoring() {
         </div>
 
         {/* 报警列表 */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
           {filteredAlarms.map((alarm) => (
             <div
               key={alarm.id}
               onClick={() => handleAlarmClick(alarm)}
               className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                 selectedMapPoint === alarm.id.toString()
-                  ? 'border-orange-500 bg-orange-50 shadow-md'
-                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                  ? 'border-orange-500 bg-orange-900/40 shadow-md'
+                  : 'border-teal-700/30 bg-teal-800/30 hover:border-teal-600/50 hover:bg-teal-800/40 hover:shadow-sm'
               }`}
             >
               <div className="flex items-start justify-between mb-2">
-                <h4 className="text-sm font-medium text-gray-800 flex-1 line-clamp-2">{alarm.title}</h4>
+                <h4 className="text-sm font-medium text-gray-100 flex-1 line-clamp-2">{alarm.title}</h4>
                 <span className={`text-xs px-2 py-0.5 rounded-full ml-2 flex-shrink-0 ${
-                  alarm.status === '已核实' ? 'bg-green-100 text-green-700' :
-                  alarm.status === '已查看' ? 'bg-blue-100 text-blue-700' :
-                  alarm.isTimeout ? 'bg-red-100 text-red-700' :
-                  'bg-yellow-100 text-yellow-700'
+                  alarm.status === '已核实' ? 'bg-green-900/60 text-green-200' :
+                  alarm.status === '已查看' ? 'bg-blue-900/60 text-blue-200' :
+                  alarm.isTimeout ? 'bg-red-900/60 text-red-200' :
+                  'bg-yellow-900/60 text-yellow-200'
                 }`}>
                   {alarm.status}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center justify-between text-xs text-gray-300">
                 <span>{alarm.time.split(' ')[1]}</span>
-                <span className={alarm.type === '涉林火情' ? 'text-red-600' : 'text-gray-600'}>
+                <span className={alarm.type === '涉林火情' ? 'text-red-400' : 'text-gray-300'}>
                   {alarm.type}
                 </span>
               </div>
@@ -5185,62 +5233,61 @@ function ForestFireMonitoring() {
         </div>
       </div>
 
-      {/* 右侧浮动卡片 */}
-      <div className="absolute top-4 right-4 w-72 space-y-3">
-        {/* 森林火灾等级 */}
-        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white">
-            <h3 className="font-semibold text-gray-800 text-sm">森林火灾等级</h3>
-          </div>
-          <div className="p-3">
+      {/* 右侧浮动卡片 - 合并的大板块 */}
+      <div className="absolute top-4 right-4 bottom-4 w-72 bg-cyan-900/80 backdrop-blur-sm rounded-xl shadow-2xl border border-cyan-700/50 overflow-hidden flex flex-col" style={{ zIndex: 30 }}>
+        {/* 区域1: 森林火灾等级 */}
+        <div className="border-b border-cyan-700/50 p-3">
+          <div className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative">
             <img
               src="/火灾风险.jpg"
               alt="森林火灾等级"
-              className="w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => {/* 可以添加放大查看功能 */}}
+              className="w-full h-full object-cover"
+              onClick={() => setShowFireRiskImage(true)}
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
+              <span className="text-white text-xs">点击放大查看</span>
+            </div>
           </div>
         </div>
 
-        {/* 监控设备 */}
-        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-white">
-            <h3 className="font-semibold text-gray-800 text-sm">监控设备</h3>
-          </div>
-          <div className="p-3 space-y-2">
+        {/* 区域2: 监控设备 - 2x2网格 */}
+        <div className="border-b border-cyan-700/50 p-3 flex-shrink-0">
+          <div className="grid grid-cols-2 gap-2">
             {forestFireOverviewData.monitoringEquipment.map((equipment, index) => (
-              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <ResourceIcon iconName={equipment.icon} className={`w-4 h-4 ${equipment.color}`} />
-                  <span className="text-xs text-gray-700">{equipment.name}</span>
-                </div>
-                <span className={`text-sm font-bold ${equipment.color}`}>
+              <div key={index} className="bg-cyan-800/40 rounded-lg p-2 flex flex-col items-center justify-center">
+                <ResourceIcon iconName={equipment.icon} className={`w-5 h-5 ${equipment.color} mb-1`} />
+                <span className="text-xs text-gray-200 text-center mb-1 leading-tight">{equipment.name}</span>
+                <span className={`text-base font-bold ${equipment.color}`}>
                   {equipment.online}
-                  <span className="text-xs text-gray-500">/{equipment.total}</span>
+                  <span className="text-xs text-gray-400">/{equipment.total}</span>
                 </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 无人机画面 */}
-        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
-            <h3 className="font-semibold text-gray-800 text-sm">无人机画面</h3>
-          </div>
-          <div className="p-3">
-            <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center relative overflow-hidden">
-              <video
-                className="w-full h-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-              >
-                <source src="/drone-video.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
-                实时画面
+        {/* 区域3: 无人机画面 */}
+        <div className="flex-1 p-3 min-h-0">
+          <div
+            className="h-full bg-gray-900 rounded-lg flex items-center justify-center relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={handleDroneViewClick}
+          >
+            <video
+              className="w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+            >
+              <source src="/drone-video.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
+              无人机画面
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/30">
+              <div className="text-white text-center">
+                <Play className="w-12 h-12 mx-auto mb-2" />
+                <span className="text-sm">点击放大查看</span>
               </div>
             </div>
           </div>
@@ -5284,41 +5331,45 @@ function ForestFireMonitoring() {
               <h3 className="text-sm font-semibold text-gray-700 mb-4">相关信息</h3>
               <div className="grid grid-cols-2 gap-3">
                 {/* 实时监控画面 */}
-                <div className="col-span-2 aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                  <video
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  >
-                    <source src="/monitoring-video.mp4" type="video/mp4" />
-                  </video>
+                <div className="col-span-2 aspect-video bg-gray-900 rounded-lg overflow-hidden relative">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 via-gray-900 to-black">
+                    <div className="text-center text-gray-400">
+                      <Video className="w-16 h-16 mx-auto mb-3 opacity-50" />
+                      <div className="text-sm">实时监控画面</div>
+                      <div className="text-xs opacity-60 mt-1">{selectedAlarm.device}</div>
+                    </div>
+                  </div>
                   <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
                     实时监控画面
+                  </div>
+                  <div className="absolute top-2 right-2 px-2 py-1 bg-red-600 rounded text-white text-xs animate-pulse">
+                    LIVE
                   </div>
                 </div>
 
                 {/* 报警图片 */}
-                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-90">
-                  <img
-                    src={selectedAlarm.alarmImage}
-                    alt="报警图片"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="aspect-square bg-gradient-to-br from-orange-900 via-red-800 to-orange-700 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 relative">
+                  <div className="absolute inset-0 flex items-center justify-center text-white">
+                    <div className="text-center">
+                      <AlertTriangle className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                      <div className="text-sm font-medium">报警截图</div>
+                      <div className="text-xs opacity-70 mt-1">{selectedAlarm.time}</div>
+                    </div>
+                  </div>
                   <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
                     报警图片
                   </div>
                 </div>
 
                 {/* 报警视频片段 */}
-                <div className="aspect-square bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:opacity-90">
-                  <video
-                    className="w-full h-full object-cover"
-                    controls
-                  >
-                    <source src={selectedAlarm.alarmVideo} type="video/mp4" />
-                  </video>
+                <div className="aspect-square bg-gradient-to-br from-blue-900 via-purple-900 to-blue-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 relative">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <Play className="w-12 h-12 mx-auto mb-2 opacity-80" />
+                      <div className="text-sm font-medium">报警视频</div>
+                      <div className="text-xs opacity-70 mt-1">点击播放</div>
+                    </div>
+                  </div>
                   <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded text-white text-xs">
                     报警视频
                   </div>
@@ -5391,6 +5442,168 @@ function ForestFireMonitoring() {
           </div>
         </div>
       )}
+
+      {/* 全屏图片查看器 - 火灾风险图 */}
+      {showFireRiskImage && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+          onClick={() => setShowFireRiskImage(false)}
+        >
+          <div className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center p-8">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowFireRiskImage(false)
+              }}
+              className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+            >
+              <X className="w-8 h-8 text-white" />
+            </button>
+            <img
+              src="/火灾风险.jpg"
+              alt="森林火灾等级 - 放大查看"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 监控设备弹窗 */}
+      {showDeviceModal && selectedDevice && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+          onClick={() => setShowDeviceModal(false)}
+        >
+          <div
+            className="relative max-w-4xl w-[90vw] max-h-[90vh] bg-gray-900 rounded-xl shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-cyan-900 to-gray-900 border-b border-cyan-700/50">
+              <div className="flex items-center gap-3">
+                <ResourceIcon iconName={selectedDevice.icon} className={`w-6 h-6 ${selectedDevice.color}`} />
+                <div>
+                  <h2 className="text-xl font-bold text-white">{selectedDevice.name}</h2>
+                  <p className="text-sm text-cyan-300">
+                    在线：{selectedDevice.online} / 总数：{selectedDevice.total}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeviceModal(false)}
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+
+            {/* 监控画面区域 */}
+            <div className="p-6">
+              <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 via-gray-900 to-black">
+                  <div className="text-center text-gray-400">
+                    <Video className="w-20 h-20 mx-auto mb-4 opacity-50" />
+                    <div className="text-lg font-medium text-white mb-2">实时监控画面</div>
+                    <div className="text-sm opacity-60">{selectedDevice.name} - 在线状态</div>
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-red-600 rounded text-white text-sm font-medium flex items-center gap-2">
+                  <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                  LIVE
+                </div>
+                <div className="absolute top-4 right-4 px-3 py-1.5 bg-black/60 backdrop-blur-sm rounded text-white text-xs">
+                  {new Date().toLocaleString('zh-CN')}
+                </div>
+              </div>
+
+              {/* 设备信息 */}
+              <div className="mt-4 grid grid-cols-3 gap-4">
+                <div className="bg-gray-800 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-green-400">{selectedDevice.online}</div>
+                  <div className="text-xs text-gray-400 mt-1">在线设备</div>
+                </div>
+                <div className="bg-gray-800 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-gray-400">{selectedDevice.total - selectedDevice.online}</div>
+                  <div className="text-xs text-gray-400 mt-1">离线设备</div>
+                </div>
+                <div className="bg-gray-800 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-cyan-400">{selectedDevice.total}</div>
+                  <div className="text-xs text-gray-400 mt-1">设备总数</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 无人机画面弹窗 */}
+      {showDroneModal && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+          onClick={() => setShowDroneModal(false)}
+        >
+          <div
+            className="relative max-w-6xl w-[95vw] max-h-[95vh] bg-gray-900 rounded-xl shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/80 to-transparent">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Video className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">无人机实时画面</h2>
+                  <p className="text-sm text-blue-300">巡查中 - 海拔高度：150m</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDroneModal(false)}
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+
+            {/* 视频区域 */}
+            <div className="aspect-video bg-black">
+              <video
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+              >
+                <source src="/drone-video.mp4" type="video/mp4" />
+              </video>
+
+              {/* 实时信息叠加层 */}
+              <div className="absolute top-4 right-4 px-3 py-1.5 bg-red-600 rounded text-white text-sm font-medium flex items-center gap-2">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                LIVE
+              </div>
+
+              <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+                <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-3 text-white text-sm space-y-1">
+                  <div className="flex items-center gap-4">
+                    <span>经度：115.8923°E</span>
+                    <span>纬度：39.7245°N</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span>高度：150m</span>
+                    <span>速度：12m/s</span>
+                    <span>电量：78%</span>
+                  </div>
+                </div>
+                <div className="bg-black/70 backdrop-blur-sm rounded-lg px-4 py-3 text-white text-xs">
+                  {new Date().toLocaleString('zh-CN')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -5442,6 +5655,2355 @@ function ForestFireStats() {
         <Flame className="w-16 h-16 text-orange-500 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-700 mb-2">森林防火统计分析</h2>
         <p className="text-gray-500">界面内容待添加</p>
+      </div>
+    </div>
+  )
+}
+
+// ========== 巡护图库界面 ==========
+function PatrolGallery() {
+  // 状态管理
+  const [selectedCategory, setSelectedCategory] = useState('巡护照片')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set())
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [imagesPerPage, setImagesPerPage] = useState(20)
+  const [showCategorySettings, setShowCategorySettings] = useState(false)
+
+  // 图片分类数据
+  const categories = [
+    { id: 'patrol', name: '巡护照片', visible: true },
+    { id: 'human', name: '人为干扰', visible: true },
+    { id: 'disaster', name: '自然灾害', visible: true },
+    { id: 'pest', name: '有害生物', visible: true },
+    { id: 'fire', name: '火灾隐患', visible: true },
+    { id: 'equipment', name: '设备巡检', visible: true },
+    { id: 'community', name: '社区走访', visible: true },
+    { id: 'case', name: '林政案件', visible: true },
+    { id: 'occupation', name: '林草征占', visible: true },
+    { id: 'other', name: '其它事件', visible: true }
+  ]
+
+  // 模拟图片数据
+  const mockImages = Array.from({ length: 85 }, (_, i) => ({
+    id: `img-${i + 1}`,
+    name: `${selectedCategory}_${String(i + 1).padStart(3, '0')}.jpg`,
+    category: selectedCategory,
+    isFavorite: favorites.has(`img-${i + 1}`),
+    tags: i % 3 === 0 ? ['标签1'] : i % 5 === 0 ? ['标签2'] : [],
+    date: `2025-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`
+  }))
+
+  // 标签选项
+  const tagOptions = ['全部', '标签1', '标签2', '标签3', '重要']
+
+  // 过滤后的图片
+  const filteredImages = mockImages.filter(img => {
+    const matchSearch = img.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchTag = !selectedTag || selectedTag === '全部' || img.tags.includes(selectedTag)
+    const matchFavorite = !showFavoritesOnly || img.isFavorite
+    return matchSearch && matchTag && matchFavorite
+  })
+
+  // 分页数据
+  const totalPages = Math.ceil(filteredImages.length / imagesPerPage)
+  const startIndex = (currentPage - 1) * imagesPerPage
+  const endIndex = startIndex + imagesPerPage
+  const currentImages = filteredImages.slice(startIndex, endIndex)
+
+  // 处理函数
+  const toggleFavorite = (imageId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newFavorites = new Set(favorites)
+    if (newFavorites.has(imageId)) {
+      newFavorites.delete(imageId)
+    } else {
+      newFavorites.add(imageId)
+    }
+    setFavorites(newFavorites)
+  }
+
+  const toggleSelect = (imageId: string) => {
+    const newSelected = new Set(selectedImages)
+    if (newSelected.has(imageId)) {
+      newSelected.delete(imageId)
+    } else {
+      newSelected.add(imageId)
+    }
+    setSelectedImages(newSelected)
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedImages.size === currentImages.length) {
+      setSelectedImages(new Set())
+    } else {
+      setSelectedImages(new Set(currentImages.map(img => img.id)))
+    }
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* 顶部按钮和筛选区域 */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between mb-3">
+          {/* 左侧按钮 */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSelectAll}
+              className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5"
+            >
+              <CheckSquare className="w-4 h-4" />
+              全选
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Download className="w-4 h-4" />
+              导出
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Trash2 className="w-4 h-4" />
+              删除
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Tag className="w-4 h-4" />
+              标签
+            </button>
+          </div>
+
+          {/* 右侧筛选和搜索 */}
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
+              <Star className="w-4 h-4" />
+              <input
+                type="checkbox"
+                checked={showFavoritesOnly}
+                onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              仅查看收藏
+            </label>
+            <select
+              value={selectedTag || '全部'}
+              onChange={(e) => setSelectedTag(e.target.value === '全部' ? null : e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
+            >
+              {tagOptions.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
+              ))}
+            </select>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="搜索图片名称"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded w-48 focus:outline-none focus:ring-1 focus:ring-green-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 主内容区域 */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* 左侧分类导航 */}
+        <div className="w-44 bg-white border-r border-gray-200 flex flex-col">
+          <div className="flex-1 overflow-y-auto py-2">
+            {categories.filter(cat => cat.visible).map((category) => (
+              <button
+                key={category.id}
+                onClick={() => {
+                  setSelectedCategory(category.name)
+                  setCurrentPage(1)
+                  setSelectedImages(new Set())
+                }}
+                className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                  selectedCategory === category.name
+                    ? 'bg-green-50 text-green-700 font-medium border-l-4 border-green-600'
+                    : 'text-gray-700 hover:bg-gray-50 border-l-4 border-transparent'
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+          {/* 设置按钮 */}
+          <div className="border-t border-gray-200 p-3">
+            <button
+              onClick={() => setShowCategorySettings(true)}
+              className="w-full px-3 py-2 text-sm text-gray-700 bg-gray-50 hover:bg-gray-100 rounded transition-colors flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              分类设置
+            </button>
+          </div>
+        </div>
+
+        {/* 右侧图片展示区 */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* 图片网格 */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="grid grid-cols-4 gap-4">
+              {currentImages.map((image) => (
+                <div
+                  key={image.id}
+                  className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => toggleSelect(image.id)}
+                >
+                  {/* 图片 */}
+                  <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    <Image className="w-12 h-12 text-gray-400" />
+                  </div>
+
+                  {/* 收藏按钮 - 左上角 */}
+                  <button
+                    onClick={(e) => toggleFavorite(image.id, e)}
+                    className="absolute top-2 left-2 p-1.5 rounded-full bg-white/90 hover:bg-white transition-colors shadow"
+                  >
+                    <Star
+                      className={`w-4 h-4 ${
+                        image.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'
+                      }`}
+                    />
+                  </button>
+
+                  {/* 勾选按钮 - 右上角 */}
+                  <div className="absolute top-2 right-2">
+                    <div
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                        selectedImages.has(image.id)
+                          ? 'bg-green-500 border-green-500'
+                          : 'bg-white/90 border-gray-400 hover:border-green-400'
+                      }`}
+                    >
+                      {selectedImages.has(image.id) && (
+                        <Check className="w-3 h-3 text-white" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 图片名称 - 左下角 */}
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                    <div className="text-xs text-white font-medium truncate">{image.name}</div>
+                    <div className="text-xs text-gray-300">{image.date}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredImages.length === 0 && (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-gray-400">
+                  <Image className="w-16 h-16 mx-auto mb-3 opacity-50" />
+                  <p>暂无图片</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 底部信息栏 */}
+          <div className="bg-white border-t border-gray-200 px-4 py-2.5">
+            <div className="flex items-center justify-between">
+              {/* 数量信息 */}
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <span>共 {filteredImages.length} 张图片</span>
+                <span className="text-gray-300">|</span>
+                <span>已选 {selectedImages.size} 张</span>
+              </div>
+
+              {/* 分页控制 */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">每页显示：</span>
+                  <select
+                    value={imagesPerPage}
+                    onChange={(e) => {
+                      setImagesPerPage(Number(e.target.value))
+                      setCurrentPage(1)
+                    }}
+                    className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
+                  >
+                    <option value={12}>12</option>
+                    <option value={20}>20</option>
+                    <option value={40}>40</option>
+                    <option value={60}>60</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    上一页
+                  </button>
+                  <span className="text-sm text-gray-600 px-2">
+                    {currentPage} / {totalPages || 1}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    下一页
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 分类设置弹窗 */}
+      {showCategorySettings && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setShowCategorySettings(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-[400px] max-h-[80vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+              <h3 className="text-base font-medium text-gray-900">分类显示设置</h3>
+              <button
+                onClick={() => setShowCategorySettings(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 分类列表 */}
+            <div className="p-4 space-y-2 max-h-96 overflow-y-auto">
+              {categories.map((category) => (
+                <label key={category.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={category.visible}
+                    onChange={(e) => {
+                      // 更新分类可见性的逻辑可以在这里添加
+                    }}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">{category.name}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* 底部按钮 */}
+            <div className="px-4 py-3 border-t bg-gray-50 flex justify-end gap-2">
+              <button
+                onClick={() => setShowCategorySettings(false)}
+                className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => setShowCategorySettings(false)}
+                className="px-4 py-2 text-sm text-white bg-green-500 rounded hover:bg-green-600"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ========== 巡护历史界面 ==========
+function PatrolHistory() {
+  // 状态管理
+  const [selectedType, setSelectedType] = useState('全部')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(20)
+  const [sortBy, setSortBy] = useState('startTime')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [showAudioModal, setShowAudioModal] = useState(false)
+  const [showTextModal, setShowTextModal] = useState(false)
+  const [selectedTrajectory, setSelectedTrajectory] = useState<any>(null)
+  const [showMapModal, setShowMapModal] = useState(false)
+
+  // 模拟历史巡护数据
+  const mockHistoryData = Array.from({ length: 156 }, (_, i) => ({
+    id: `traj-${String(i + 1).padStart(4, '0')}`,
+    number: `TRK${String(i + 1).padStart(4, '0')}`,
+    title: `石花洞保护区巡护记录-${i + 1}`,
+    mode: ['步行', '驾车', '乘船', '其它'][Math.floor(Math.random() * 4)],
+    type: ['自由巡护', '任务巡护'][Math.floor(Math.random() * 2)],
+    personnel: ['张明', '李华', '王强', '刘伟', '赵军'][Math.floor(Math.random() * 5)],
+    startTime: `2025-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')} ${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+    endTime: `2025-03-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')} ${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+    distance: (Math.random() * 15 + 2).toFixed(2),
+    duration: (Math.random() * 8 + 1).toFixed(1),
+    speed: (Math.random() * 5 + 2).toFixed(1),
+    imageCount: Math.floor(Math.random() * 50),
+    audioCount: Math.floor(Math.random() * 10),
+    textCount: Math.floor(Math.random() * 20),
+    hasImages: Math.random() > 0.3,
+    hasAudio: Math.random() > 0.5,
+    hasText: Math.random() > 0.4,
+    notes: '无特殊备注'
+  }))
+
+  // 过滤数据
+  const filteredData = mockHistoryData.filter(item => {
+    const matchType = selectedType === '全部' || item.type === selectedType
+    const matchSearch = !searchTerm ||
+      item.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.personnel.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchType && matchSearch
+  })
+
+  // 排序数据
+  const sortedData = [...filteredData].sort((a, b) => {
+    let compareResult = 0
+    if (sortBy === 'startTime') {
+      compareResult = new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    }
+    return sortOrder === 'asc' ? -compareResult : compareResult
+  })
+
+  // 分页数据
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage)
+  const startIndex = (currentPage - 1) * rowsPerPage
+  const endIndex = startIndex + rowsPerPage
+  const currentPageData = sortedData.slice(startIndex, endIndex)
+
+  // 处理函数
+  const toggleRow = (id: string) => {
+    const newSelected = new Set(selectedRows)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedRows(newSelected)
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedRows.size === currentPageData.length) {
+      setSelectedRows(new Set())
+    } else {
+      setSelectedRows(new Set(currentPageData.map(item => item.id)))
+    }
+  }
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('desc')
+    }
+  }
+
+  const handleView = (trajectory: any) => {
+    setSelectedTrajectory(trajectory)
+    setShowMapModal(true)
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* 顶部按钮和筛选区域 */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
+        {/* 第一行按钮和筛选 */}
+        <div className="flex items-center justify-between mb-3">
+          {/* 左侧按钮 */}
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Download className="w-4 h-4" />
+              导出
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Trash2 className="w-4 h-4" />
+              删除
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <ArrowUpDown className="w-4 h-4" />
+              排序
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Eye className="w-4 h-4" />
+              显示
+            </button>
+          </div>
+
+          {/* 右侧按钮 */}
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Map className="w-4 h-4" />
+              地图查看
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Image className="w-4 h-4" />
+              图标制作
+            </button>
+            <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+              <Trophy className="w-4 h-4" />
+              打分排名
+            </button>
+            <select
+              value={selectedType}
+              onChange={(e) => {
+                setSelectedType(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
+            >
+              <option>全部</option>
+              <option>自由巡护</option>
+              <option>任务巡护</option>
+            </select>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="搜索编号、标题、人员..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-4 py-1.5 text-sm border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-green-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 主内容区域 - 表格 */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-auto">
+          <table className="w-full border-collapse">
+            <thead className="sticky top-0 z-10 bg-gray-50">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-10 sticky left-0 z-20 bg-gray-50">
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.size === currentPageData.length && currentPageData.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300"
+                    />
+                  </div>
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-24 sticky left-10 z-20 bg-gray-50">
+                  轨迹编号
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-32 sticky left-[136px] z-20 bg-gray-50">
+                  轨迹标题
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-20">
+                  巡护模式
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-24">
+                  巡护类型
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-20">
+                  巡护人员
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-32">
+                  <button onClick={() => handleSort('startTime')} className="flex items-center gap-1 hover:text-green-600">
+                    开始时间
+                    {sortBy === 'startTime' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </button>
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-32">
+                  结束时间
+                </th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-700 border-b border-gray-300 w-24">
+                  里程(km)
+                </th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-700 border-b border-gray-300 w-20">
+                  时长(h)
+                </th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-700 border-b border-gray-300 w-28">
+                  速度
+                </th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 border-b border-gray-300 w-16">
+                  图片
+                </th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 border-b border-gray-300 w-16">
+                  录音
+                </th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 border-b border-gray-300 w-16">
+                  文本
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b border-gray-300 w-32">
+                  备注
+                </th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 border-b border-gray-300 w-28 sticky right-0 z-20 bg-gray-50">
+                  操作
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentPageData.map((item) => (
+                <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-3 py-2 border-b border-gray-200 sticky left-0 z-10 bg-white">
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.has(item.id)}
+                        onChange={() => toggleRow(item.id)}
+                        className="rounded border-gray-300"
+                      />
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 sticky left-10 z-10 bg-white text-xs text-gray-900">
+                    {item.number}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 sticky left-[136px] z-10 bg-white text-xs text-gray-900 max-w-[120px] truncate" title={item.title}>
+                    {item.title}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-700">
+                    {item.mode}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-700">
+                    {item.type}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-700">
+                    {item.personnel}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-600">
+                    {item.startTime}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-600">
+                    {item.endTime}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-700 text-right">
+                    {item.distance}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-700 text-right">
+                    {item.duration}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-700 text-right">
+                    {item.speed}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-center">
+                    <button
+                      onClick={() => {
+                        setSelectedTrajectory(item)
+                        setShowImageModal(true)
+                      }}
+                      className={`mx-auto ${item.hasImages ? 'text-green-600 hover:text-green-800' : 'text-gray-400'}`}
+                      disabled={!item.hasImages}
+                    >
+                      <Image className="w-4 h-4" />
+                    </button>
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-center">
+                    <button
+                      onClick={() => {
+                        setSelectedTrajectory(item)
+                        setShowAudioModal(true)
+                      }}
+                      className={`mx-auto ${item.hasAudio ? 'text-green-600 hover:text-green-800' : 'text-gray-400'}`}
+                      disabled={!item.hasAudio}
+                    >
+                      <Mic className="w-4 h-4" />
+                    </button>
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-center">
+                    <button
+                      onClick={() => {
+                        setSelectedTrajectory(item)
+                        setShowTextModal(true)
+                      }}
+                      className={`mx-auto ${item.hasText ? 'text-green-600 hover:text-green-800' : 'text-gray-400'}`}
+                      disabled={!item.hasText}
+                    >
+                      <FileText className="w-4 h-4" />
+                    </button>
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 text-xs text-gray-500 max-w-[150px] truncate">
+                    {item.notes}
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200 sticky right-0 z-10 bg-white">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => handleView(item)}
+                        className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded"
+                        title="查看"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded"
+                        title="下载"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                        title="删除"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {currentPageData.length === 0 && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-gray-400">
+                <ClipboardCheck className="w-16 h-16 mx-auto mb-3 opacity-50" />
+                <p>暂无巡护记录</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 底部信息栏 */}
+      <div className="bg-white border-t border-gray-200 px-4 py-2.5">
+        <div className="flex items-center justify-between">
+          {/* 数量信息 */}
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>共 {sortedData.length} 条记录</span>
+            <span className="text-gray-300">|</span>
+            <span>已选 {selectedRows.size} 条</span>
+          </div>
+
+          {/* 分页控制 */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">每页显示：</span>
+              <select
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value))
+                  setCurrentPage(1)
+                }}
+                className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                上一页
+              </button>
+              <span className="text-sm text-gray-600 px-2">
+                {currentPage} / {totalPages || 1}
+              </span>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage >= totalPages}
+                className="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                下一页
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 图片弹窗 */}
+      {showImageModal && selectedTrajectory && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          onClick={() => setShowImageModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-[800px] max-h-[80vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h3 className="text-base font-medium text-gray-900">
+                {selectedTrajectory.title} - 巡护图片
+              </h3>
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 图片网格 */}
+            <div className="p-4 grid grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto">
+              {Array.from({ length: selectedTrajectory.imageCount || 12 }, (_, i) => (
+                <div key={i} className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Image className="w-12 h-12 text-gray-400" />
+                  <div className="absolute bottom-1 right-1 text-xs text-gray-500">图{i + 1}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 录音弹窗 */}
+      {showAudioModal && selectedTrajectory && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          onClick={() => setShowAudioModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-[600px] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h3 className="text-base font-medium text-gray-900">
+                {selectedTrajectory.title} - 巡护录音
+              </h3>
+              <button
+                onClick={() => setShowAudioModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 录音列表 */}
+            <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+              {Array.from({ length: selectedTrajectory.audioCount || 5 }, (_, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <button className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200">
+                    <Play className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-800">录音文件 {i + 1}</div>
+                    <div className="text-xs text-gray-500">00:{String(Math.floor(Math.random() * 3) + 1)}:{String(Math.floor(Math.random() * 60)).padStart(2, '0')}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 文本弹窗 */}
+      {showTextModal && selectedTrajectory && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          onClick={() => setShowTextModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-[600px] max-h-[80vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h3 className="text-base font-medium text-gray-900">
+                {selectedTrajectory.title} - 巡护记录
+              </h3>
+              <button
+                onClick={() => setShowTextModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 文本列表 */}
+            <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+              {Array.from({ length: selectedTrajectory.textCount || 5 }, (_, i) => (
+                <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="text-xs text-gray-500 mb-1">
+                    {selectedTrajectory.startTime.split(' ')[0]} {String(Math.floor(Math.random() * 12)).padStart(2, '0')}:{String(Math.floor(Math.random() * 60)).padStart(2, '0')}
+                  </div>
+                  <div className="text-sm text-gray-700 leading-relaxed">
+                    在{selectedTrajectory.mode}巡护过程中，发现{['植物', '动物', '设施'][i % 3]}活动迹象，记录位置在保护区的{['东', '南', '西', '北'][i % 4]}部区域。天气状况良好，能见度约{Math.floor(Math.random() * 10 + 5)}公里。
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 地图查看弹窗 */}
+      {showMapModal && selectedTrajectory && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+          onClick={() => setShowMapModal(false)}
+        >
+          <div
+            className="relative w-[90vw] h-[80vh] bg-white rounded-xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 标题栏 */}
+            <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+              <h3 className="text-lg font-medium text-white">{selectedTrajectory.title}</h3>
+              <button
+                onClick={() => setShowMapModal(false)}
+                className="p-2 bg-black/50 hover:bg-black/70 rounded-full text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 地图内容 */}
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <Map className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>地图轨迹展示</p>
+                <p className="text-sm mt-2">轨迹编号：{selectedTrajectory.number}</p>
+                <p className="text-sm">巡护人员：{selectedTrajectory.personnel}</p>
+                <p className="text-sm">巡护里程：{selectedTrajectory.distance} km</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ========== 巡护监管>上报事件界面 ==========
+
+// 上报事件类型定义
+const eventTypes = [
+  { id: 'human-interference', name: '人为干扰', color: '#ef4444' },
+  { id: 'natural-disaster', name: '自然灾害', color: '#f97316' },
+  { id: 'pest-disease', name: '有害生物', color: '#a855f7' },
+  { id: 'fire-risk', name: '火灾隐患', color: '#dc2626' },
+  { id: 'equipment-inspection', name: '设备巡检', color: '#3b82f6' },
+  { id: 'community-visit', name: '社区走访', color: '#06b6d4' },
+  { id: 'forestry-case', name: '林政案件', color: '#eab308' },
+  { id: 'forest-occupation', name: '林草征占', color: '#84cc16' },
+  { id: 'other-event', name: '其它事件', color: '#6b7280' }
+]
+
+// 各类型事件的表头字段定义
+const eventTableHeaders = {
+  'human-interference': ['勾选', '图片', '干扰类型', '干扰强度', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'natural-disaster': ['勾选', '图片', '灾害类型', '灾害等级', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'pest-disease': ['勾选', '图片', '物种类型', '物种名称', '损害面积', '损害树种', '林班', '小班', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'fire-risk': ['勾选', '图片', '隐患类型', '处理状态', '处理说明', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'equipment-inspection': ['勾选', '图片', '巡检内容', '巡检说明', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'community-visit': ['勾选', '图片', '社区名称', '居民人数', '工作对象', '工作内容', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'forestry-case': ['勾选', '图片', '案件名称', '案件行为类型', '案件性质', '案件详细描述', '案件具体地点', '涉案人数', '受理情况', '损失情况', '处罚状态', '处罚类型', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'forest-occupation': ['勾选', '图片', '征占类型', '征占面积', '征占用途', '申请人', '申请时间', '审批状态', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹'],
+  'other-event': ['勾选', '图片', '事件描述', '记录人', '记录时间', '经度', '纬度', '海拔', '调查区域', '小地名', '备注', '关联轨迹']
+}
+
+// 生成模拟上报事件数据
+function generateEventData(eventType: string, count: number = 50) {
+  const interferenceTypes = ['采伐', '放牧', '狩猎', '采药', '采石', '旅游', '建设', '其它']
+  const interferenceLevels = ['轻微', '中等', '严重']
+  const disasterTypes = ['滑坡', '泥石流', '洪水', '雪灾', '风灾', '旱灾', '其它']
+  const disasterLevels = ['一般', '较大', '重大', '特大']
+  const pestTypes = ['昆虫', '真菌', '细菌', '病毒', '线虫', '其它']
+  const pestSpecies = ['松毛虫', '美国白蛾', '天牛', '松材线虫', '其它']
+  const treeSpecies = ['油松', '侧柏', '栓皮栎', '山杨', '其它']
+  const fireRiskTypes = ['违规用火', '祭祀用火', '农事用火', '吸烟', '其它']
+  const processStatuses = ['未处理', '处理中', '已处理', '已关闭']
+  const inspectionContents = ['设备检查', '电池更换', '数据采集', '故障维修', '设备维护']
+  const communities = ['石花洞社区', '南车营社区', '高庄村', '辛开口村', '其它']
+  const workTargets = ['居民', '村干部', '护林员', '经营者', '其它']
+  const caseTypes = ['非法采伐', '非法狩猎', '非法占用', '非法采石', '非法建设', '其它']
+  const caseNatures = ['行政案件', '刑事案件', '民事案件']
+  const penaltyTypes = ['罚款', '没收', '警告', '拘留', '其它']
+  const penaltyStatuses = ['未处罚', '处罚中', '已处罚', '已结案']
+  const occupationTypes = ['临时占用', '永久占用', '其它']
+  const occupationPurposes = ['基础设施建设', '公共服务设施', '公益事业', '商业开发', '其它']
+  const approvalStatuses = ['待审批', '审批中', '已批准', '已拒绝']
+
+  return Array.from({ length: count }, (_, i) => {
+    const id = `${eventType}-${String(i + 1).padStart(3, '0')}`
+    const baseData = {
+      id,
+      图片: `https://picsum.photos/80/60?random=${i}`,
+      记录人: ['张明', '李华', '王强', '刘伟', '赵军', '陈静', '周伟', '吴敏'][Math.floor(Math.random() * 8)],
+      记录时间: `2025-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')} ${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+      经度: (115.8 + Math.random() * 0.2).toFixed(6),
+      纬度: (39.7 + Math.random() * 0.1).toFixed(6),
+      海拔: `${Math.floor(300 + Math.random() * 500)}m`,
+      调查区域: ['核心区', '缓冲区', '实验区'][Math.floor(Math.random() * 3)],
+      小地名: ['石花洞', '南车营', '高庄', '辛开口', '其它'][Math.floor(Math.random() * 5)],
+      备注: ['无特殊情况', '需要跟进', '已处理', '待进一步调查'][Math.floor(Math.random() * 4)],
+      关联轨迹: `TRK${String(Math.floor(Math.random() * 200) + 1).padStart(4, '0')}`
+    }
+
+    switch (eventType) {
+      case 'human-interference':
+        return {
+          ...baseData,
+          干扰类型: interferenceTypes[Math.floor(Math.random() * interferenceTypes.length)],
+          干扰强度: interferenceLevels[Math.floor(Math.random() * interferenceLevels.length)]
+        }
+      case 'natural-disaster':
+        return {
+          ...baseData,
+          灾害类型: disasterTypes[Math.floor(Math.random() * disasterTypes.length)],
+          灾害等级: disasterLevels[Math.floor(Math.random() * disasterLevels.length)]
+        }
+      case 'pest-disease':
+        return {
+          ...baseData,
+          物种类型: pestTypes[Math.floor(Math.random() * pestTypes.length)],
+          物种名称: pestSpecies[Math.floor(Math.random() * pestSpecies.length)],
+          损害面积: `${Math.floor(Math.random() * 100 + 10)}亩`,
+          损害树种: treeSpecies[Math.floor(Math.random() * treeSpecies.length)],
+          林班: `${String(Math.floor(Math.random() * 20) + 1).padStart(3, '0')}`,
+          小班: `${Math.floor(Math.random() * 50) + 1}`
+        }
+      case 'fire-risk':
+        return {
+          ...baseData,
+          隐患类型: fireRiskTypes[Math.floor(Math.random() * fireRiskTypes.length)],
+          处理状态: processStatuses[Math.floor(Math.random() * processStatuses.length)],
+          处理说明: '现场已检查处理'
+        }
+      case 'equipment-inspection':
+        return {
+          ...baseData,
+          巡检内容: inspectionContents[Math.floor(Math.random() * inspectionContents.length)],
+          巡检说明: '设备运行正常'
+        }
+      case 'community-visit':
+        return {
+          ...baseData,
+          社区名称: communities[Math.floor(Math.random() * communities.length)],
+          居民人数: Math.floor(Math.random() * 500 + 50),
+          工作对象: workTargets[Math.floor(Math.random() * workTargets.length)],
+          工作内容: '政策宣传、法规讲解'
+        }
+      case 'forestry-case':
+        return {
+          ...baseData,
+          案件名称: `${caseTypes[Math.floor(Math.random() * caseTypes.length)]}案-${i + 1}`,
+          案件行为类型: caseTypes[Math.floor(Math.random() * caseTypes.length)],
+          案件性质: caseNatures[Math.floor(Math.random() * caseNatures.length)],
+          案件详细描述: '发现违法行为，已立案调查',
+          案件具体地点: baseData.小地名,
+          涉案人数: Math.floor(Math.random() * 5 + 1),
+          受理情况: '已受理',
+          损失情况: ['无', '轻微', '中等', '严重'][Math.floor(Math.random() * 4)],
+          处罚状态: penaltyStatuses[Math.floor(Math.random() * penaltyStatuses.length)],
+          处罚类型: penaltyTypes[Math.floor(Math.random() * penaltyTypes.length)]
+        }
+      case 'forest-occupation':
+        return {
+          ...baseData,
+          征占类型: occupationTypes[Math.floor(Math.random() * occupationTypes.length)],
+          征占面积: `${Math.floor(Math.random() * 50 + 1)}亩`,
+          征占用途: occupationPurposes[Math.floor(Math.random() * occupationPurposes.length)],
+          申请人: ['村委会', '企业', '个人', '政府'][Math.floor(Math.random() * 4)],
+          申请时间: `2025-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
+          审批状态: approvalStatuses[Math.floor(Math.random() * approvalStatuses.length)]
+        }
+      case 'other-event':
+        return {
+          ...baseData,
+          事件描述: '发现异常情况，已记录'
+        }
+      default:
+        return baseData
+    }
+  })
+}
+
+function PatrolEventReporting() {
+  const [selectedEventType, setSelectedEventType] = useState('human-interference')
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [selectAll, setSelectAll] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(20)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showSortModal, setShowSortModal] = useState(false)
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingRecord, setEditingRecord] = useState<any>(null)
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null)
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [selectedImage, setSelectedImage] = useState('')
+  const [editMode, setEditMode] = useState(false)
+  const [editableData, setEditableData] = useState<any[]>([])
+
+  // 生成当前事件类型的数据
+  const eventData = generateEventData(selectedEventType, 80)
+
+  // 初始化可编辑数据
+  useEffect(() => {
+    if (editMode) {
+      setEditableData([...eventData])
+    }
+  }, [editMode, selectedEventType])
+
+  // 筛选数据
+  const filteredData = editMode ? editableData : eventData.filter(item => {
+    if (!searchTerm) return true
+    const searchLower = searchTerm.toLowerCase()
+    return Object.values(item).some(value =>
+      String(value).toLowerCase().includes(searchLower)
+    )
+  })
+
+  // 排序数据
+  const sortedData = [...filteredData].sort((a, b) => {
+    if (!sortConfig) return 0
+    const aValue = a[sortConfig.key as keyof typeof a]
+    const bValue = b[sortConfig.key as keyof typeof b]
+    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
+    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
+    return 0
+  })
+
+  // 分页数据
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage)
+  const startIndex = (currentPage - 1) * rowsPerPage
+  const endIndex = startIndex + rowsPerPage
+  const currentPageData = sortedData.slice(startIndex, endIndex)
+
+  // 全选处理
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRows(new Set())
+    } else {
+      setSelectedRows(new Set(currentPageData.map(item => item.id)))
+    }
+    setSelectAll(!selectAll)
+  }
+
+  // 单选处理
+  const handleSelectRow = (id: string) => {
+    const newSelected = new Set(selectedRows)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedRows(newSelected)
+  }
+
+  // 获取当前事件类型的表头
+  const currentHeaders = eventTableHeaders[selectedEventType as keyof typeof eventTableHeaders] || []
+
+  return (
+    <div className="h-full flex flex-col bg-white">
+      {/* 顶部类型切换栏 */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 bg-white overflow-x-auto">
+        {eventTypes.map(type => (
+          <button
+            key={type.id}
+            onClick={() => {
+              setSelectedEventType(type.id)
+              setCurrentPage(1)
+              setSelectedRows(new Set())
+              setSelectAll(false)
+              setEditMode(false)
+            }}
+            className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+              selectedEventType === type.id
+                ? 'text-white bg-green-600'
+                : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+            }`}
+          >
+            {type.name}
+          </button>
+        ))}
+      </div>
+
+      {/* 操作按钮栏 */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2">
+          <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+            <Download className="w-4 h-4" />
+            导出
+          </button>
+          <button className="px-3 py-1.5 text-sm text-red-600 bg-white border border-red-300 rounded hover:bg-red-50 transition-colors flex items-center gap-1.5">
+            <Trash2 className="w-4 h-4" />
+            删除
+          </button>
+          <button
+            onClick={() => setShowSortModal(true)}
+            className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5"
+          >
+            <ArrowUpDown className="w-4 h-4" />
+            排序
+          </button>
+          <button
+            onClick={() => setShowFilterModal(true)}
+            className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5"
+          >
+            <Filter className="w-4 h-4" />
+            筛选
+          </button>
+          <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+            <Eye className="w-4 h-4" />
+            显示
+          </button>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-green-300 rounded">
+            <Edit2 className="w-4 h-4 text-green-700" />
+            <span className="text-sm text-green-700">编辑</span>
+            <button
+              onClick={() => setEditMode(!editMode)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                editMode ? 'bg-green-600' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  editMode ? 'translate-x-4.5' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowMapModal(true)}
+            className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5"
+          >
+            <Map className="w-4 h-4" />
+            地图查看
+          </button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-4 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-64"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 表格区域 - 支持横向滚动 */}
+      <div className="flex-1 overflow-auto">
+        <table className="w-full border-collapse">
+          <thead className="sticky top-0 z-10 bg-gray-50">
+            <tr>
+              {currentHeaders.map((header, index) => (
+                <th
+                  key={index}
+                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200 whitespace-nowrap bg-gray-50"
+                  style={{
+                    left: index < 2 ? `${index * 50}px` : undefined,
+                    position: index < 2 ? 'sticky' : undefined,
+                    zIndex: index === 0 ? 20 : 10
+                  }}
+                >
+                  {header === '勾选' ? (
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                    />
+                  ) : header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {currentPageData.map((item, rowIndex) => (
+              <tr key={item.id} className="hover:bg-gray-50 border-b border-gray-100">
+                {currentHeaders.map((header, cellIndex) => {
+                  const cellKey = header as keyof typeof item
+                  const cellValue = item[cellKey]
+                  const isEditable = editMode && header !== '勾选' && header !== '图片'
+
+                  return (
+                    <td
+                      key={cellIndex}
+                      className="px-4 py-3 text-sm text-gray-900 border-b border-gray-100 whitespace-nowrap"
+                      style={{
+                        left: cellIndex < 2 ? `${cellIndex * 50}px` : undefined,
+                        position: cellIndex < 2 ? 'sticky' : undefined,
+                        zIndex: cellIndex === 0 ? 10 : 1,
+                        backgroundColor: cellIndex < 2 ? 'white' : undefined
+                      }}
+                    >
+                      {header === '勾选' ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.has(item.id)}
+                          onChange={() => handleSelectRow(item.id)}
+                          className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                        />
+                      ) : header === '图片' ? (
+                        <img
+                          src={cellValue as string}
+                          alt="事件图片"
+                          className="w-16 h-12 object-cover rounded cursor-pointer hover:opacity-80"
+                          onClick={() => {
+                            setSelectedImage(cellValue as string)
+                            setShowImageModal(true)
+                          }}
+                        />
+                      ) : isEditable ? (
+                        <input
+                          type="text"
+                          value={cellValue as string}
+                          onChange={(e) => {
+                            const newData = [...editableData]
+                            const rowIndex = newData.findIndex(d => d.id === item.id)
+                            if (rowIndex !== -1) {
+                              newData[rowIndex][cellKey] = e.target.value
+                              setEditableData(newData)
+                            }
+                          }}
+                          className="w-full px-2 py-1 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      ) : (
+                        cellValue
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 底部信息栏 */}
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-4 text-sm text-gray-600">
+          <span>共 {filteredData.length} 条记录</span>
+          <span>已选 {selectedRows.size} 条</span>
+          {editMode && (
+            <span className="text-green-600 font-medium">● 编辑模式</span>
+          )}
+          <div className="flex items-center gap-2">
+            <span>每页显示:</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value))
+                setCurrentPage(1)
+              }}
+              className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span>条</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {editMode && (
+            <>
+              <button
+                onClick={() => {
+                  setEditMode(false)
+                  setEditableData([])
+                }}
+                className="px-4 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  setEditMode(false)
+                  setEditableData([])
+                }}
+                className="px-4 py-1.5 text-sm text-white bg-green-600 rounded hover:bg-green-700 transition-colors"
+              >
+                保存
+              </button>
+            </>
+          )}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &lt;&lt;
+            </button>
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &lt;
+          </button>
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum
+            if (totalPages <= 5) {
+              pageNum = i + 1
+            } else if (currentPage <= 3) {
+              pageNum = i + 1
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i
+            } else {
+              pageNum = currentPage - 2 + i
+            }
+            return (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-8 h-8 flex items-center justify-center rounded ${
+                  currentPage === pageNum
+                    ? 'bg-green-500 text-white'
+                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            )
+          })}
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &gt;
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &gt;&gt;
+          </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 图片预览弹窗 */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-4xl max-h-[80vh] bg-white rounded-lg p-4" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-800"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img src={selectedImage} alt="事件图片" className="max-w-full max-h-[75vh] object-contain" />
+          </div>
+        </div>
+      )}
+
+      {/* 排序弹窗 */}
+      {showSortModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">排序选项</h3>
+              <button onClick={() => setShowSortModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {currentHeaders.filter(h => h !== '勾选' && h !== '图片').map((header) => (
+                <button
+                  key={header}
+                  onClick={() => {
+                    setSortConfig({
+                      key: header,
+                      direction: sortConfig?.key === header && sortConfig.direction === 'asc' ? 'desc' : 'asc'
+                    })
+                    setShowSortModal(false)
+                  }}
+                  className={`w-full text-left px-4 py-2 rounded hover:bg-gray-100 ${
+                    sortConfig?.key === header ? 'bg-green-50 text-green-700' : 'text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{header}</span>
+                    {sortConfig?.key === header && (
+                      <span className="text-sm">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 筛选弹窗 */}
+      {showFilterModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">筛选选项</h3>
+              <button onClick={() => setShowFilterModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">记录时间范围</label>
+                <div className="flex gap-2">
+                  <input type="date" className="flex-1 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500" />
+                  <span className="self-center text-gray-500">-</span>
+                  <input type="date" className="flex-1 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">记录人</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500">
+                  <option value="">全部</option>
+                  <option>张明</option>
+                  <option>李华</option>
+                  <option>王强</option>
+                </select>
+              </div>
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  onClick={() => setShowFilterModal(false)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => setShowFilterModal(false)}
+                  className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+                >
+                  应用
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 地图查看弹窗 */}
+      {showMapModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-[90vw] h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-medium text-gray-900">地图查看</h3>
+              <button onClick={() => setShowMapModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 bg-gray-100 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <Map className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>地图视图</p>
+                <p className="text-sm">显示 {eventTypes.find(t => t.id === selectedEventType)?.name} 的分布位置</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 编辑弹窗 */}
+      {showEditModal && editingRecord && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
+              <h3 className="text-lg font-medium text-gray-900">编辑记录</h3>
+              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {currentHeaders.filter(h => h !== '勾选' && h !== '图片').map((header) => (
+                <div key={header}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{header}</label>
+                  {header === '备注' ? (
+                    <textarea
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                      rows={3}
+                      defaultValue={editingRecord[header as keyof typeof editingRecord]}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                      defaultValue={editingRecord[header as keyof typeof editingRecord]}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 justify-end p-4 border-t sticky bottom-0 bg-white">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ========== 巡护监管>巡护任务界面 ==========
+
+function PatrolTask() {
+  const [activeTab, setActiveTab] = useState<'task-dispatch' | 'area-config'>('task-dispatch')
+
+  return (
+    <div className="h-full flex flex-col bg-white">
+      {/* 子页面切换标签 */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 bg-white">
+        <button
+          onClick={() => setActiveTab('task-dispatch')}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            activeTab === 'task-dispatch'
+              ? 'text-white bg-green-600'
+              : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          巡护任务下发
+        </button>
+        <button
+          onClick={() => setActiveTab('area-config')}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            activeTab === 'area-config'
+              ? 'text-white bg-green-600'
+              : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          巡护任务区配置
+        </button>
+      </div>
+
+      {/* 子页面内容 */}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'task-dispatch' ? <PatrolTaskDispatch /> : <PatrolAreaConfig />}
+      </div>
+    </div>
+  )
+}
+
+// 巡护任务下发子界面
+function PatrolTaskDispatch() {
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(20)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchType, setSearchType] = useState<'name' | 'personnel' | 'createTime'>('name')
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [editingTask, setEditingTask] = useState<any>(null)
+
+  // 模拟任务数据
+  const taskData = [
+    {
+      id: 'task-001',
+      name: '石花洞核心区巡护任务',
+      personnel: '张明',
+      status: '待开始',
+      createTime: '2025-03-20 09:30',
+      completeTime: '-',
+      description: '对石花洞核心区域进行常规巡护，重点检查人为活动情况'
+    },
+    {
+      id: 'task-002',
+      name: '南车营社区周边巡护',
+      personnel: '李华',
+      status: '进行中',
+      createTime: '2025-03-19 14:00',
+      completeTime: '-',
+      description: '走访南车营社区，宣传护林政策'
+    },
+    {
+      id: 'task-003',
+      name: '高庄村野生动物监测',
+      personnel: '王强',
+      status: '已完成',
+      createTime: '2025-03-18 08:00',
+      completeTime: '2025-03-18 16:30',
+      description: '监测野生动物活动情况，记录发现'
+    },
+    {
+      id: 'task-004',
+      name: '辛开口村森林防火巡查',
+      personnel: '刘伟',
+      status: '待开始',
+      createTime: '2025-03-21 10:00',
+      completeTime: '-',
+      description: '检查防火设施，排查火灾隐患'
+    },
+    {
+      id: 'task-005',
+      name: '春季植被调查任务',
+      personnel: '赵军',
+      status: '进行中',
+      createTime: '2025-03-17 09:00',
+      completeTime: '-',
+      description: '春季植被返青情况调查'
+    }
+  ]
+
+  // 筛选数据
+  const filteredData = taskData.filter(item => {
+    if (!searchTerm) return true
+    const searchLower = searchTerm.toLowerCase()
+    if (searchType === 'name') {
+      return item.name.toLowerCase().includes(searchLower)
+    } else if (searchType === 'personnel') {
+      return item.personnel.toLowerCase().includes(searchLower)
+    } else {
+      return item.createTime.includes(searchTerm)
+    }
+  })
+
+  // 分页数据
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage)
+  const startIndex = (currentPage - 1) * rowsPerPage
+  const endIndex = startIndex + rowsPerPage
+  const currentPageData = filteredData.slice(startIndex, endIndex)
+
+  const toggleRow = (id: string) => {
+    const newSelected = new Set(selectedRows)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedRows(newSelected)
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedRows.size === currentPageData.length) {
+      setSelectedRows(new Set())
+    } else {
+      setSelectedRows(new Set(currentPageData.map(item => item.id)))
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case '待开始': return 'bg-gray-100 text-gray-700'
+      case '进行中': return 'bg-blue-100 text-blue-700'
+      case '已完成': return 'bg-green-100 text-green-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-white">
+      {/* 操作按钮栏 */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setEditingTask(null)
+              setShowCreateModal(true)
+            }}
+            className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            新建
+          </button>
+          <button className="px-3 py-1.5 text-sm text-red-600 bg-white border border-red-300 rounded hover:bg-red-50 transition-colors flex items-center gap-1.5">
+            <Trash2 className="w-4 h-4" />
+            删除
+          </button>
+          <button className="px-3 py-1.5 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center gap-1.5">
+            <ArrowUpDown className="w-4 h-4" />
+            排序
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={searchType}
+            onChange={(e) => setSearchType(e.target.value as any)}
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500 bg-white"
+          >
+            <option value="name">任务名称</option>
+            <option value="personnel">巡护员</option>
+            <option value="createTime">创建时间</option>
+          </select>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-4 py-1.5 text-sm border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-green-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 表格区域 */}
+      <div className="flex-1 overflow-auto">
+        <table className="w-full border-collapse">
+          <thead className="sticky top-0 z-10 bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200 w-12">
+                <input
+                  type="checkbox"
+                  checked={selectedRows.size === currentPageData.length && currentPageData.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                />
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200">任务名称</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200">指派巡护员</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200">任务状态</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200">创建时间</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200">完成时间</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200">任务说明</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200 w-40">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentPageData.map((task) => (
+              <tr key={task.id} className="hover:bg-gray-50 border-b border-gray-100">
+                <td className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.has(task.id)}
+                    onChange={() => toggleRow(task.id)}
+                    className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                  />
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-900">{task.name}</td>
+                <td className="px-4 py-3 text-sm text-gray-900">{task.personnel}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(task.status)}`}>
+                    {task.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-600">{task.createTime}</td>
+                <td className="px-4 py-3 text-sm text-gray-600">{task.completeTime}</td>
+                <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{task.description}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        setEditingTask(task)
+                        setShowCreateModal(true)
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+                      title="查看"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingTask(task)
+                        setShowCreateModal(true)
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-green-500 hover:bg-green-50 rounded transition-colors"
+                      title="编辑"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                      title="删除"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="p-1.5 text-gray-500 hover:text-orange-500 hover:bg-orange-50 rounded transition-colors"
+                      title="禁用"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 底部信息栏 */}
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-4 text-sm text-gray-600">
+          <span>共 {filteredData.length} 条记录</span>
+          <span>已选 {selectedRows.size} 条</span>
+          <div className="flex items-center gap-2">
+            <span>每页显示:</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value))
+                setCurrentPage(1)
+              }}
+              className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span>条</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &lt;&lt;
+          </button>
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &lt;
+          </button>
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum = i + 1
+            if (totalPages <= 5) {
+              pageNum = i + 1
+            } else if (currentPage <= 3) {
+              pageNum = i + 1
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i
+            } else {
+              pageNum = currentPage - 2 + i
+            }
+            return (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-8 h-8 flex items-center justify-center rounded ${
+                  currentPage === pageNum
+                    ? 'bg-green-500 text-white'
+                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            )
+          })}
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &gt;
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &gt;&gt;
+          </button>
+        </div>
+      </div>
+
+      {/* 新增/编辑任务弹窗 */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="relative bg-white rounded-lg w-[90vw] h-[85vh] flex">
+            {/* 关闭按钮 - 右上角 */}
+            <button
+              onClick={() => {
+                setShowCreateModal(false)
+                setEditingTask(null)
+              }}
+              className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 z-50 border border-gray-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* 左侧表单区 - 1/3 */}
+            <div className="w-1/3 flex flex-col border-r border-gray-200">
+              <div className="px-4 py-3 border-b">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {editingTask ? '编辑巡护任务' : '新增巡护任务'}
+                </h3>
+              </div>
+
+              {/* 提示信息 */}
+              <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 text-sm text-blue-800">
+                请先在"巡护区域设置"中上传或绘制巡护区范围和推荐路线
+              </div>
+
+              {/* 表单 */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    任务名称 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue={editingTask?.name}
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="请输入任务名称"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    巡护区域 <span className="text-red-500">*</span>
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    <option value="">请选择巡护区域</option>
+                    <option value="area1">石花洞核心区</option>
+                    <option value="area2">南车营周边</option>
+                    <option value="area3">高庄区域</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    推荐路线
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    <option value="">请选择推荐路线</option>
+                    <option value="route1">环线A</option>
+                    <option value="route2">环线B</option>
+                    <option value="route3">巡护路线C</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    指派巡护员 <span className="text-red-500">*</span>
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    <option value="">请选择巡护员</option>
+                    <option value="zhang">张明</option>
+                    <option value="li">李华</option>
+                    <option value="wang">王强</option>
+                    <option value="liu">刘伟</option>
+                    <option value="zhao">赵军</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    任务说明
+                  </label>
+                  <textarea
+                    defaultValue={editingTask?.description}
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                    rows={4}
+                    placeholder="请输入任务说明"
+                  />
+                </div>
+              </div>
+
+              {/* 底部按钮 */}
+              <div className="flex gap-2 justify-end p-4 border-t">
+                <button
+                  onClick={() => {
+                    setShowCreateModal(false)
+                    setEditingTask(null)
+                  }}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => {
+                    setShowCreateModal(false)
+                    setEditingTask(null)
+                  }}
+                  className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+                >
+                  保存
+                </button>
+              </div>
+            </div>
+
+            {/* 右侧地图预览区 - 2/3 */}
+            <div className="w-2/3 flex flex-col">
+              <div className="flex-1 bg-gray-100 flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <Map className="w-20 h-20 mx-auto mb-4 opacity-30" />
+                  <p className="text-lg font-medium">巡护区域和路线预览</p>
+                  <p className="text-sm mt-2">选择巡护区域和推荐路线后在此显示</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// 巡护任务区配置子界面
+function PatrolAreaConfig() {
+  const [activeLayer, setActiveLayer] = useState<'area' | 'route'>('area')
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [areas, setAreas] = useState([
+    { id: 'area1', name: '石花洞核心区', type: '面', position: { top: '35%', left: '50%' } },
+    { id: 'area2', name: '南车营周边', type: '面', position: { top: '45%', left: '35%' } },
+    { id: 'area3', name: '高庄区域', type: '面', position: { top: '55%', left: '60%' } }
+  ])
+  const [routes, setRoutes] = useState([
+    { id: 'route1', name: '环线A', type: '线', points: ['30%,40%', '40%,35%', '50%,40%', '50%,50%', '40%,55%', '30%,50%'] },
+    { id: 'route2', name: '环线B', type: '线', points: ['60%,30%', '70%,35%', '75%,45%', '70%,55%', '60%,50%', '55%,40%'] },
+    { id: 'route3', name: '巡护路线C', type: '线', points: ['25%,60%', '35%,65%', '45%,60%', '55%,65%', '65%,60%'] }
+  ])
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [editingItem, setEditingItem] = useState<any>(null)
+
+  const currentData = activeLayer === 'area' ? areas : routes
+
+  const toggleSelect = (id: string) => {
+    const newSelected = new Set(selectedItems)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedItems(newSelected)
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === currentData.length) {
+      setSelectedItems(new Set())
+    } else {
+      setSelectedItems(new Set(currentData.map(item => item.id)))
+    }
+  }
+
+  return (
+    <div className="h-full flex">
+      {/* 左侧浮层 */}
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-lg z-10">
+        {/* 专题切换 */}
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => {
+              setActiveLayer('area')
+              setSelectedItems(new Set())
+            }}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeLayer === 'area'
+                ? 'text-green-700 bg-green-50 border-b-2 border-green-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            巡护区范围
+          </button>
+          <button
+            onClick={() => {
+              setActiveLayer('route')
+              setSelectedItems(new Set())
+            }}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeLayer === 'route'
+                ? 'text-green-700 bg-green-50 border-b-2 border-green-600'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            推荐路线
+          </button>
+        </div>
+
+        {/* 操作按钮 */}
+        <div className="p-3 border-b border-gray-200 space-y-2">
+          <button className="w-full px-3 py-2 text-sm text-green-700 bg-white border border-green-300 rounded hover:bg-green-50 transition-colors flex items-center justify-center gap-2">
+            <Upload className="w-4 h-4" />
+            导入数据
+          </button>
+          <button
+            onClick={() => setIsDrawing(!isDrawing)}
+            className={`w-full px-3 py-2 text-sm rounded transition-colors flex items-center justify-center gap-2 ${
+              isDrawing
+                ? 'text-red-700 bg-red-50 border border-red-300'
+                : 'text-green-700 bg-white border border-green-300 hover:bg-green-50'
+            }`}
+          >
+            <Edit2 className="w-4 h-4" />
+            {isDrawing ? '停止绘制' : '手动绘制'}
+          </button>
+        </div>
+
+        {/* 数据列表 */}
+        <div className="flex-1 overflow-y-auto">
+          <table className="w-full">
+            <thead className="sticky top-0 bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b w-12">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size === currentData.length && currentData.length > 0}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                  />
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">名称</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b">类型</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 border-b w-20">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentData.map((item) => (
+                <tr key={item.id} className={`hover:bg-gray-50 border-b border-gray-100 ${selectedItems.has(item.id) ? 'bg-green-50' : ''}`}>
+                  <td className="px-4 py-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.has(item.id)}
+                      onChange={() => toggleSelect(item.id)}
+                      className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                    />
+                  </td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{item.name}</td>
+                  <td className="px-4 py-2 text-sm text-gray-600">{item.type}</td>
+                  <td className="px-4 py-2">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setEditingItem(item)}
+                        className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded"
+                        title="编辑"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded" title="删除">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 提示信息 */}
+        {isDrawing && (
+          <div className="p-3 bg-yellow-50 border-t border-yellow-200 text-sm text-yellow-800">
+            <div className="flex items-center gap-2 mb-1">
+              <Edit2 className="w-4 h-4" />
+              <span className="font-medium">绘制模式</span>
+            </div>
+            <p className="text-xs">点击地图添加{activeLayer === 'area' ? '区域顶点' : '路线节点'}，双击完成绘制</p>
+          </div>
+        )}
+
+        {/* 数据格式提示 */}
+        <div className="p-3 bg-blue-50 border-t border-blue-200 text-xs text-blue-800">
+          <div className="font-medium mb-1">支持的导入格式：</div>
+          <div>SHP、KML、KMZ、GeoJSON</div>
+        </div>
+      </div>
+
+      {/* 地图区域 - 使用实时巡护的地图底图 */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* 地图底图 */}
+        <div className="absolute inset-0">
+          <img
+            src="/map-bg.png"
+            alt="地图底图"
+            className="w-full h-full object-cover"
+            style={{ objectFit: 'fill' }}
+          />
+        </div>
+
+        {/* 地图内容层 */}
+        <div className="absolute inset-0">
+          {/* 保护区边界 */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="w-[500px] h-[380px] rounded-3xl border-2 border-green-500/40 border-dashed flex items-center justify-center bg-green-500/5">
+              {/* 缓冲区 */}
+              <div className="w-[380px] h-[280px] rounded-2xl border-2 border-amber-500/40 border-dashed flex items-center justify-center bg-amber-500/5">
+                {/* 核心区 */}
+                <div className="w-[200px] h-[150px] rounded-xl bg-red-500/10 border-2 border-red-500/50 flex items-center justify-center">
+                  <span className="text-sm text-red-400 font-medium">核心区</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 显示选中的巡护区范围 */}
+          {activeLayer === 'area' && areas.filter(a => selectedItems.has(a.id)).map((area) => (
+            <div
+              key={area.id}
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 animate-pulse"
+              style={{ top: area.position.top, left: area.position.left, zIndex: 15 }}
+            >
+              <div className="px-4 py-2 bg-blue-500/90 text-white text-sm font-medium rounded-lg shadow-lg border-2 border-white">
+                {area.name}
+              </div>
+            </div>
+          ))}
+
+          {/* 显示选中的推荐路线 */}
+          {activeLayer === 'route' && routes.filter(r => selectedItems.has(r.id)).map((route) => (
+            <div key={route.id} className="absolute inset-0 pointer-events-none" style={{ zIndex: 14 }}>
+              <svg className="w-full h-full">
+                <polyline
+                  points={route.points.map(p => {
+                    const [left, top] = p.split(',')
+                    return `${left} ${top}`
+                  }).join(' ')}
+                  fill="none"
+                  stroke="#22c55e"
+                  strokeWidth="3"
+                  strokeDasharray="8,4"
+                  className="drop-shadow-lg"
+                />
+                {route.points.map((point, idx) => {
+                  const [left, top] = point.split(',')
+                  return (
+                    <circle
+                      key={`${route.id}-${idx}`}
+                      cx={left}
+                      cy={top}
+                      r="6"
+                      fill="#22c55e"
+                      stroke="white"
+                      strokeWidth="2"
+                      className="drop-shadow"
+                    />
+                  )
+                })}
+              </svg>
+              {/* 路线标签 */}
+              <div
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-green-600 text-white text-xs font-medium rounded shadow-lg"
+                style={{ top: route.points[0].split(',')[1], left: route.points[0].split(',')[0] }}
+              >
+                {route.name}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 绘制模式提示 */}
+        {isDrawing && (
+          <div className="absolute top-4 left-4 z-20 px-4 py-2 bg-white rounded-lg shadow-lg">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="font-medium text-gray-900">绘制中...</span>
+            </div>
+          </div>
+        )}
+
+        {/* 选中项提示 */}
+        {selectedItems.size > 0 && !isDrawing && (
+          <div className="absolute top-4 left-4 z-20 px-4 py-2 bg-white rounded-lg shadow-lg">
+            <div className="text-sm text-gray-700">
+              已选中 <span className="font-bold text-green-600">{selectedItems.size}</span> 项
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -7425,6 +9987,180 @@ export default function Home() {
             <div className="h-full -m-4"><ImageMonitorInterface /></div>
           )}
 
+          {/* 生物多样性图片管理界面 */}
+          {selectedId === 'biodiversity-images' && (
+            <div className="h-full flex flex-col bg-gray-50">
+              {/* 提示信息 */}
+              <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm text-blue-800">
+                  <span>同北极花生物多样性数据管理和分析系统，地址：</span>
+                  <a
+                    href="https://bjh.zhbhd.cn/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    https://bjh.zhbhd.cn/
+                  </a>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <Image className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">图片管理</h2>
+                  <p className="text-gray-500">图片管理功能开发中</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 生物多样性物种鉴定界面 */}
+          {selectedId === 'biodiversity-identify' && (
+            <div className="h-full flex flex-col bg-gray-50">
+              {/* 提示信息 */}
+              <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm text-blue-800">
+                  <span>同北极花生物多样性数据管理和分析系统，地址：</span>
+                  <a
+                    href="https://bjh.zhbhd.cn/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    https://bjh.zhbhd.cn/
+                  </a>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <Search className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">物种鉴定</h2>
+                  <p className="text-gray-500">物种鉴定功能开发中</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 生物多样性物种分布界面 */}
+          {selectedId === 'biodiversity-distribution' && (
+            <div className="h-full flex flex-col bg-gray-50">
+              {/* 提示信息 */}
+              <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm text-blue-800">
+                  <span>同北极花生物多样性数据管理和分析系统，地址：</span>
+                  <a
+                    href="https://bjh.zhbhd.cn/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    https://bjh.zhbhd.cn/
+                  </a>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <Map className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">物种分布</h2>
+                  <p className="text-gray-500">物种分布功能开发中</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 生物多样性物种统计界面 */}
+          {selectedId === 'stats-species' && (
+            <div className="h-full flex flex-col bg-gray-50">
+              {/* 提示信息 */}
+              <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm text-blue-800">
+                  <span>同北极花生物多样性数据管理和分析系统，地址：</span>
+                  <a
+                    href="https://bjh.zhbhd.cn/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    https://bjh.zhbhd.cn/
+                  </a>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <BarChart3 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">物种统计</h2>
+                  <p className="text-gray-500">物种统计功能开发中</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 生物多样性专业分析界面 */}
+          {selectedId === 'stats-analysis' && (
+            <div className="h-full flex flex-col bg-gray-50">
+              {/* 提示信息 */}
+              <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm text-blue-800">
+                  <span>同北极花生物多样性数据管理和分析系统，地址：</span>
+                  <a
+                    href="https://bjh.zhbhd.cn/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    https://bjh.zhbhd.cn/
+                  </a>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <LineChart className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">专业分析</h2>
+                  <p className="text-gray-500">专业分析功能开发中</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 生物多样性报告撰写界面 */}
+          {selectedId === 'stats-report' && (
+            <div className="h-full flex flex-col bg-gray-50">
+              {/* 提示信息 */}
+              <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+                <div className="flex items-center gap-2 text-sm text-blue-800">
+                  <span>同北极花生物多样性数据管理和分析系统，地址：</span>
+                  <a
+                    href="https://bjh.zhbhd.cn/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    https://bjh.zhbhd.cn/
+                  </a>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <FileText className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">报告撰写</h2>
+                  <p className="text-gray-500">报告撰写功能开发中</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 巡护监管实时巡护界面 */}
           {selectedId === 'patrol-realtime' && (
             <div className="h-full -m-4"><PatrolRealtimeInterface /></div>
@@ -7434,6 +10170,18 @@ export default function Home() {
           {selectedId === 'patrol-assessment' && (
             <div className="h-full -m-4"><PatrolStatsAssessment /></div>
           )}
+
+          {/* 巡护图库界面 */}
+          {selectedId === 'patrol-gallery' && <PatrolGallery />}
+
+          {/* 历史巡护界面 */}
+          {selectedId === 'patrol-history' && <PatrolHistory />}
+
+          {/* 上报事件界面 */}
+          {selectedId === 'patrol-event' && <PatrolEventReporting />}
+
+          {/* 巡护任务界面 */}
+          {selectedId === 'patrol-task' && <PatrolTask />}
 
           {/* 地质资源展示界面 */}
           {selectedId === 'geology-resource' && (
@@ -7495,6 +10243,11 @@ export default function Home() {
             <div className="h-full -m-4"><HumanActivityHistoryInterface /></div>
           )}
 
+          {/* 人类活动设备管理界面 */}
+          {selectedId === 'human-device' && (
+            <div className="h-full -m-4"><HumanActivityDeviceManagement /></div>
+          )}
+
           {/* 生态环境数据管理界面 */}
           {selectedId === 'ecology-data' && (
             <div className="h-full -m-4"><EcologyDataManagement /></div>
@@ -7528,6 +10281,11 @@ export default function Home() {
           {/* 旅游管理实时监控1界面 - 白天模式 */}
           {selectedId === 'tourism-realtime-1' && (
             <div className="h-full -m-4"><TourismRealtimeLight /></div>
+          )}
+
+          {/* 旅游管理设备管理界面 */}
+          {selectedId === 'tourism-device' && (
+            <div className="h-full -m-4"><TourismDeviceManagement /></div>
           )}
 
           {/* 保护地概况界面 */}

@@ -2,5 +2,6 @@
 export { HumanActivityRealtimeInterface } from './HumanActivityRealtimeInterface'
 export { HumanActivityRealtimeLight } from './HumanActivityRealtimeLight'
 export { HumanActivityHistoryInterface } from './HumanActivityHistoryInterface'
+export { HumanActivityDeviceManagement } from './HumanActivityDeviceManagement'
 export { FullscreenVideoModal } from './FullscreenVideoModal'
 export { FullscreenMapModal } from './FullscreenMapModal'

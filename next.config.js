@@ -13,7 +13,9 @@ const nextConfig = {
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
     'http://*.ngrok.io',
-    'apnic-pharmaceutical-rev-transition.trycloudflare.com'
+    'http://192.168.1.*',
+    'amp-environmental-declare-animals.trycloudflare.com',
+    'kodak-bridge-friends-due.trycloudflare.com'
   ],
 
   // 配置内容安全策略（移除严格限制以支持隧道访问）
@@ -24,21 +26,26 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline' https:",
-              "img-src 'self' data: blob: https: http:",
-              "font-src 'self' data: https:",
-              "connect-src 'self' data: blob: https: http: ws: wss: 'unsafe-inline'",
-              "worker-src 'self' blob:",
-              "frame-src 'self' https:",
-              "base-uri 'self' https:",
-            ].join('; ')
+            value:
+              "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: ws: wss: *; " +
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: *; " +
+              "style-src 'self' 'unsafe-inline' https: http: *; " +
+              "img-src 'self' data: blob: https: http: *; " +
+              "font-src 'self' data: https: http: *; " +
+              "connect-src 'self' data: blob: https: http: ws: wss: *; " +
+              "worker-src 'self' blob: *; " +
+              "frame-src 'self' https: *; " +
+              "base-uri 'self' https: *;"
           },
         ],
       },
     ];
+  },
+
+  // 禁用严格的安全策略以支持 Turbopack 和隧道
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
   },
 };
 

@@ -25,24 +25,24 @@ import {
 // 设备列表数据
 const deviceList = [
   // 气象设备
-  { id: 'WD001', name: '气象站-A区', type: 'weather', typeName: '气象监测', location: '景区入口', lat: '39.7856', lng: '115.8921', status: 'online', lastUpdate: '2025-03-25 15:32:18', battery: 85, signal: 92 },
-  { id: 'WD002', name: '气象站-B区', type: 'weather', typeName: '气象监测', location: '核心区', lat: '39.7912', lng: '115.8856', status: 'online', lastUpdate: '2025-03-25 15:31:45', battery: 92, signal: 88 },
-  { id: 'WD003', name: '气象站-C区', type: 'weather', typeName: '气象监测', location: '石花洞口', lat: '39.7889', lng: '115.8901', status: 'offline', lastUpdate: '2025-03-24 18:22:33', battery: 15, signal: 0 },
+  { id: 'WD001', name: '气象站-A区', type: 'weather', typeName: '气象监测', location: '景区入口', lat: '39.7856', lng: '115.8921', status: 'online', lastUpdate: '2025-03-25 15:32:18', battery: 85, signal: 92, installDate: '2024-03-15' },
+  { id: 'WD002', name: '气象站-B区', type: 'weather', typeName: '气象监测', location: '核心区', lat: '39.7912', lng: '115.8856', status: 'online', lastUpdate: '2025-03-25 15:31:45', battery: 92, signal: 88, installDate: '2024-03-18' },
+  { id: 'WD003', name: '气象站-C区', type: 'weather', typeName: '气象监测', location: '石花洞口', lat: '39.7889', lng: '115.8901', status: 'offline', lastUpdate: '2025-03-24 18:22:33', battery: 15, signal: 0, installDate: '2024-02-20' },
   // 空气设备
-  { id: 'AD001', name: '空气监测站-主站', type: 'air', typeName: '空气监测', location: '游客中心', lat: '39.7834', lng: '115.8878', status: 'online', lastUpdate: '2025-03-25 15:32:01', battery: 100, signal: 95 },
-  { id: 'AD002', name: '空气监测站-分站', type: 'air', typeName: '空气监测', location: '洞口区域', lat: '39.7867', lng: '115.8934', status: 'online', lastUpdate: '2025-03-25 15:31:58', battery: 78, signal: 82 },
+  { id: 'AD001', name: '空气监测站-主站', type: 'air', typeName: '空气监测', location: '游客中心', lat: '39.7834', lng: '115.8878', status: 'online', lastUpdate: '2025-03-25 15:32:01', battery: 100, signal: 95, installDate: '2024-01-10' },
+  { id: 'AD002', name: '空气监测站-分站', type: 'air', typeName: '空气监测', location: '洞口区域', lat: '39.7867', lng: '115.8934', status: 'online', lastUpdate: '2025-03-25 15:31:58', battery: 78, signal: 82, installDate: '2024-04-05' },
   // 水文设备
-  { id: 'HD001', name: '水文监测点-大石河', type: 'water', typeName: '水文监测', location: '大石河断面', lat: '39.7756', lng: '115.8789', status: 'online', lastUpdate: '2025-03-25 15:32:22', battery: 88, signal: 90 },
-  { id: 'HD002', name: '水文监测点-地下河', type: 'water', typeName: '水文监测', location: '洞内地下河', lat: '39.7890', lng: '115.8900', status: 'online', lastUpdate: '2025-03-25 15:31:33', battery: 72, signal: 65 },
+  { id: 'HD001', name: '水文监测点-大石河', type: 'water', typeName: '水文监测', location: '大石河断面', lat: '39.7756', lng: '115.8789', status: 'online', lastUpdate: '2025-03-25 15:32:22', battery: 88, signal: 90, installDate: '2024-02-28' },
+  { id: 'HD002', name: '水文监测点-地下河', type: 'water', typeName: '水文监测', location: '洞内地下河', lat: '39.7890', lng: '115.8900', status: 'online', lastUpdate: '2025-03-25 15:31:33', battery: 72, signal: 65, installDate: '2024-03-08' },
   // 土壤设备
-  { id: 'SD001', name: '土壤监测点-林地', type: 'soil', typeName: '土壤监测', location: '阔叶林区', lat: '39.7923', lng: '115.8834', status: 'online', lastUpdate: '2025-03-25 15:32:10', battery: 95, signal: 88 },
-  { id: 'SD002', name: '土壤监测点-灌丛', type: 'soil', typeName: '土壤监测', location: '灌丛区', lat: '39.7878', lng: '115.8967', status: 'offline', lastUpdate: '2025-03-23 09:15:22', battery: 5, signal: 0 },
-  { id: 'SD003', name: '土壤监测点-草甸', type: 'soil', typeName: '土壤监测', location: '山顶草甸', lat: '39.7956', lng: '115.8812', status: 'online', lastUpdate: '2025-03-25 15:31:55', battery: 68, signal: 75 },
+  { id: 'SD001', name: '土壤监测点-林地', type: 'soil', typeName: '土壤监测', location: '阔叶林区', lat: '39.7923', lng: '115.8834', status: 'online', lastUpdate: '2025-03-25 15:32:10', battery: 95, signal: 88, installDate: '2024-03-22' },
+  { id: 'SD002', name: '土壤监测点-灌丛', type: 'soil', typeName: '土壤监测', location: '灌丛区', lat: '39.7878', lng: '115.8967', status: 'offline', lastUpdate: '2025-03-23 09:15:22', battery: 5, signal: 0, installDate: '2023-12-15' },
+  { id: 'SD003', name: '土壤监测点-草甸', type: 'soil', typeName: '土壤监测', location: '山顶草甸', lat: '39.7956', lng: '115.8812', status: 'online', lastUpdate: '2025-03-25 15:31:55', battery: 68, signal: 75, installDate: '2024-04-12' },
   // 溶洞设备
-  { id: 'CD001', name: '溶洞监测站-一层', type: 'cave', typeName: '溶洞环境', location: '第一层洞厅', lat: '39.7891', lng: '115.8903', status: 'online', lastUpdate: '2025-03-25 15:32:25', battery: 82, signal: 70 },
-  { id: 'CD002', name: '溶洞监测站-二层', type: 'cave', typeName: '溶洞环境', location: '第二层洞厅', lat: '39.7893', lng: '115.8901', status: 'online', lastUpdate: '2025-03-25 15:32:20', battery: 79, signal: 68 },
-  { id: 'CD003', name: '溶洞监测站-三层', type: 'cave', typeName: '溶洞环境', location: '第三层洞厅', lat: '39.7895', lng: '115.8899', status: 'online', lastUpdate: '2025-03-25 15:31:48', battery: 85, signal: 62 },
-  { id: 'CD004', name: '溶洞监测站-深层', type: 'cave', typeName: '溶洞环境', location: '深层洞穴', lat: '39.7898', lng: '115.8895', status: 'offline', lastUpdate: '2025-03-22 14:08:11', battery: 0, signal: 0 },
+  { id: 'CD001', name: '溶洞监测站-一层', type: 'cave', typeName: '溶洞环境', location: '第一层洞厅', lat: '39.7891', lng: '115.8903', status: 'online', lastUpdate: '2025-03-25 15:32:25', battery: 82, signal: 70, installDate: '2024-05-20' },
+  { id: 'CD002', name: '溶洞监测站-二层', type: 'cave', typeName: '溶洞环境', location: '第二层洞厅', lat: '39.7893', lng: '115.8901', status: 'online', lastUpdate: '2025-03-25 15:32:20', battery: 79, signal: 68, installDate: '2024-05-25' },
+  { id: 'CD003', name: '溶洞监测站-三层', type: 'cave', typeName: '溶洞环境', location: '第三层洞厅', lat: '39.7895', lng: '115.8899', status: 'online', lastUpdate: '2025-03-25 15:31:48', battery: 85, signal: 62, installDate: '2024-06-01' },
+  { id: 'CD004', name: '溶洞监测站-深层', type: 'cave', typeName: '溶洞环境', location: '深层洞穴', lat: '39.7898', lng: '115.8895', status: 'offline', lastUpdate: '2025-03-22 14:08:11', battery: 0, signal: 0, installDate: '2023-11-30' },
 ]
 
 // 设备状态统计
@@ -61,6 +61,8 @@ export function EcologicalDeviceManagement() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingDevice, setEditingDevice] = useState<typeof deviceList[0] | null>(null)
   const [viewingDevice, setViewingDevice] = useState<typeof deviceList[0] | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
 
   // 筛选后的设备列表
   const filteredDevices = deviceList.filter(device => {
@@ -180,127 +182,218 @@ export function EcologicalDeviceManagement() {
       </div>
 
       {/* 设备列表 */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="w-12 px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedDevices.length === filteredDevices.length && filteredDevices.length > 0}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300"
-                  />
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">设备编号</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">设备名称</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">类型</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">位置</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">电量</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">信号</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">最后更新</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">操作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredDevices.map((device) => (
-                <tr key={device.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="w-12 px-4 py-3">
+      <div className="flex-1 flex flex-col overflow-hidden p-4">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+          {/* 表格区域 - 支持横向滚动 */}
+          <div className="flex-1 overflow-auto">
+            <table className="w-full border-collapse" style={{ minWidth: '1600px' }}>
+              <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200 sticky left-0 z-20 bg-gray-50" style={{ width: '48px', minWidth: '48px' }}>
                     <input
                       type="checkbox"
-                      checked={selectedDevices.includes(device.id)}
-                      onChange={() => toggleSelect(device.id)}
+                      checked={selectedDevices.length === filteredDevices.length && filteredDevices.length > 0}
+                      onChange={toggleSelectAll}
                       className="w-4 h-4 rounded border-gray-300"
                     />
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 font-mono">{device.id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-800 font-medium">{device.name}</td>
-                  <td className="px-4 py-3">
-                    <span 
-                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                      style={{ 
-                        backgroundColor: `${getTypeColor(device.type)}15`, 
-                        color: getTypeColor(device.type) 
-                      }}
-                    >
-                      {device.typeName}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-gray-400" />
-                      {device.location}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {device.status === 'online' ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                        <Wifi className="w-3 h-3" />
-                        在线
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-                        <WifiOff className="w-3 h-3" />
-                        离线
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <Battery className={`w-4 h-4 ${device.battery < 20 ? 'text-red-500' : device.battery < 50 ? 'text-yellow-500' : 'text-green-500'}`} />
-                      <span className={`text-sm ${device.battery < 20 ? 'text-red-600 font-medium' : 'text-gray-600'}`}>{device.battery}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <Signal className={`w-4 h-4 ${device.signal > 80 ? 'text-green-500' : device.signal > 50 ? 'text-yellow-500' : 'text-red-500'}`} />
-                      <span className="text-sm text-gray-600">{device.signal}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{device.lastUpdate}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <button 
-                        onClick={() => setViewingDevice(device)}
-                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                        title="查看详情"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => setEditingDevice(device)}
-                        className="p-1.5 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded transition-colors"
-                        title="编辑"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-                        title="删除"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                        title="更多"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200 sticky left-[48px] z-20 bg-gray-50" style={{ width: '110px', minWidth: '110px' }}>设备编号</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200 sticky left-[158px] z-20 bg-gray-50" style={{ width: '160px', minWidth: '160px' }}>设备名称</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '110px' }}>类型</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '140px' }}>位置</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '90px' }}>状态</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '90px' }}>电量</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '90px' }}>信号</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '110px' }}>经度</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '110px' }}>纬度</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '130px' }}>安装时间</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b border-gray-200" style={{ minWidth: '170px' }}>最后更新</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase border-b border-gray-200 sticky right-0 z-20 bg-gray-50" style={{ width: '160px', minWidth: '160px' }}>操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {filteredDevices.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <Settings className="w-12 h-12 mb-2" />
-              <span>暂无匹配的设备</span>
+              </thead>
+              <tbody>
+                {filteredDevices
+                  .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
+                  .map((device) => (
+                  <tr key={device.id} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                    <td className="px-4 py-3 sticky left-0 z-10 bg-white border-r border-gray-200" style={{ width: '48px', minWidth: '48px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedDevices.includes(device.id)}
+                        onChange={() => toggleSelect(device.id)}
+                        className="w-4 h-4 rounded border-gray-300"
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 font-mono sticky left-[48px] z-10 bg-white border-r border-gray-200" style={{ width: '110px', minWidth: '110px' }}>{device.id}</td>
+                    <td className="px-4 py-3 text-sm text-gray-800 font-medium sticky left-[158px] z-10 bg-white border-r border-gray-200" style={{ width: '160px', minWidth: '160px' }}>{device.name}</td>
+                    <td className="px-4 py-3" style={{ minWidth: '110px' }}>
+                      <span
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+                        style={{
+                          backgroundColor: `${getTypeColor(device.type)}15`,
+                          color: getTypeColor(device.type)
+                        }}
+                      >
+                        {device.typeName}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600" style={{ minWidth: '140px' }}>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{device.location}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3" style={{ minWidth: '90px' }}>
+                      {device.status === 'online' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 whitespace-nowrap">
+                          <Wifi className="w-3 h-3" />
+                          在线
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 whitespace-nowrap">
+                          <WifiOff className="w-3 h-3" />
+                          离线
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3" style={{ minWidth: '90px' }}>
+                      <div className="flex items-center gap-1 whitespace-nowrap">
+                        <Battery className={`w-4 h-4 flex-shrink-0 ${device.battery < 20 ? 'text-red-500' : device.battery < 50 ? 'text-yellow-500' : 'text-green-500'}`} />
+                        <span className={`text-sm ${device.battery < 20 ? 'text-red-600 font-medium' : 'text-gray-600'}`}>{device.battery}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3" style={{ minWidth: '90px' }}>
+                      <div className="flex items-center gap-1 whitespace-nowrap">
+                        <Signal className={`w-4 h-4 flex-shrink-0 ${device.signal > 80 ? 'text-green-500' : device.signal > 50 ? 'text-yellow-500' : 'text-red-500'}`} />
+                        <span className="text-sm text-gray-600">{device.signal}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 font-mono whitespace-nowrap" style={{ minWidth: '110px' }}>{device.lng}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 font-mono whitespace-nowrap" style={{ minWidth: '110px' }}>{device.lat}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap" style={{ minWidth: '130px' }}>{device.installDate}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap" style={{ minWidth: '170px' }}>{device.lastUpdate}</td>
+                    <td className="px-4 py-3 sticky right-0 z-10 bg-white border-l border-gray-200" style={{ width: '160px', minWidth: '160px' }}>
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={() => setViewingDevice(device)}
+                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+                          title="查看详情"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setEditingDevice(device)}
+                          className="p-1.5 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded transition-colors"
+                          title="编辑"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                          title="删除"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                          title="更多"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {filteredDevices.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <Settings className="w-12 h-12 mb-2" />
+                <span>暂无匹配的设备</span>
+              </div>
+            )}
+          </div>
+
+          {/* 分页组件 */}
+          <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span>共 {filteredDevices.length} 条记录</span>
+              <div className="flex items-center gap-2">
+                <span>每页显示:</span>
+                <select
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    setRowsPerPage(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+                <span>条</span>
+              </div>
             </div>
-          )}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                &lt;&lt;
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                &lt;
+              </button>
+              {Array.from({ length: Math.min(5, Math.ceil(filteredDevices.length / rowsPerPage)) }, (_, i) => {
+                let pageNum = i + 1
+                const totalPages = Math.ceil(filteredDevices.length / rowsPerPage)
+                if (totalPages <= 5) {
+                  pageNum = i + 1
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i
+                } else {
+                  pageNum = currentPage - 2 + i
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-8 h-8 flex items-center justify-center rounded ${
+                      currentPage === pageNum
+                        ? 'bg-blue-500 text-white'
+                        : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              })}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredDevices.length / rowsPerPage), p + 1))}
+                disabled={currentPage === Math.ceil(filteredDevices.length / rowsPerPage)}
+                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                &gt;
+              </button>
+              <button
+                onClick={() => setCurrentPage(Math.ceil(filteredDevices.length / rowsPerPage))}
+                disabled={currentPage === Math.ceil(filteredDevices.length / rowsPerPage)}
+                className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                &gt;&gt;
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
