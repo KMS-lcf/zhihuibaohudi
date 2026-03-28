@@ -7,7 +7,16 @@ const nextConfig = {
   reactStrictMode: false,
 
   // 允许所有域名访问开发服务器（用于 Cloudflare Tunnel 和 ngrok）
-  // allowedDevOrigins 已在 Next.js 14 中移除，使用 CORS 代替
+  allowedDevOrigins: [
+    'https://*.trycloudflare.com',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
+    'http://*.ngrok.io',
+    'http://192.168.1.*',
+    'genius-truck-camp-file.trycloudflare.com',
+    'amp-environmental-declare-animals.trycloudflare.com',
+    'kodak-bridge-friends-due.trycloudflare.com'
+  ],
 
   // 配置内容安全策略（移除严格限制以支持隧道访问）
   async headers() {
