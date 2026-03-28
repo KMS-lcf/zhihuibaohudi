@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React测试页面</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <div id="static-content">
+        <h1>静态内容</h1>
+        <p>如果你能看到这个，HTML可以正常加载</p>
+        <button id="test-btn" onclick="handleClick()">点击测试</button>
+        <p id="result">等待点击...</p>
+    </div>
+
+    <script>
+        // 测试基本JavaScript
+        function handleClick() {
+            document.getElementById('result').textContent = 'JavaScript正常工作！';
+            document.getElementById('result').style.color = 'green';
+        }
+
+        // 测试React
+        const { useState } = React;
+        const { createRoot } = ReactDOM;
+
+        function TestApp() {
+            const [count, setCount] = useState(0);
+
+            return React.createElement('div', null,
+                React.createElement('h2', null, 'React测试'),
+                React.createElement('p', null, '如果你能看到这个，React正常工作！'),
+                React.createElement('button', {
+                    onClick: () => setCount(count + 1)
+                }, `点击次数: ${count}`)
+            );
+        }
+
+        // 挂载React应用
+        try {
+            const root = createRoot(document.getElementById('root'));
+            root.render(React.createElement(TestApp));
+            console.log('React successfully mounted');
+        } catch (e) {
+            console.error('React mount failed:', e);
+            document.getElementById('root').innerHTML = '<p style="color:red">React加载失败: ' + e.message + '</p>';
+        }
+
+        console.log('Test page loaded');
+    </script>
+</body>
+</html>

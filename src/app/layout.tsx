@@ -27,6 +27,9 @@ export const metadata: Metadata = {
     siteName: "石花洞风景名胜区智慧监管系统",
     type: "website",
   },
+  other: {
+    'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: ws: wss: *; script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: ws: wss: *; style-src 'self' 'unsafe-inline' https: http: data: *; img-src 'self' data: blob: https: http: *; font-src 'self' data: https: http: *; connect-src 'self' data: blob: https: http: ws: wss: *; worker-src 'self' blob: *; frame-src 'self' https: http: *; object-src 'none';"
+  },
 };
 
 export default function RootLayout({
@@ -36,6 +39,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta httpEquiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: ws: wss: *; script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: ws: wss: *; style-src 'self' 'unsafe-inline' https: http: data: *; img-src 'self' data: blob: https: http: *; font-src 'self' data: https: http: *; connect-src 'self' data: blob: https: http: ws: wss: *; worker-src 'self' blob: *; frame-src 'self' https: http: *; object-src 'none';" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
