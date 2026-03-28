@@ -50,6 +50,28 @@ server.log
 # Skills directory
 /skills/
 
+# Cloudflare Tunnel and ngrok temporary files
+tunnel*.txt
+*.bat
+*.ps1
+README-ngrok.md
+cloudflare-tunnel-guide.md
+ngrok-*.md
+ngrok-*.txt
+手动启动*.md
+手动启动*.bat
+最简单方法*.md
+最新方法*.md
+本地启动.bat
+浏览器下载.bat
+简化安装.bat
+隧道监控.ps1
+保持隧道稳定.bat
+轻松启动cloudflare.md
+最终方案.md
+design-reference/
+设计需求/
+
 # Additional ignore patterns
 .eslintignore
 *.log

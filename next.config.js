@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
@@ -8,15 +7,7 @@ const nextConfig = {
   reactStrictMode: false,
 
   // 允许所有域名访问开发服务器（用于 Cloudflare Tunnel 和 ngrok）
-  allowedDevOrigins: [
-    'https://*.trycloudflare.com',
-    'https://*.ngrok-free.app',
-    'https://*.ngrok.io',
-    'http://*.ngrok.io',
-    'http://192.168.1.*',
-    'amp-environmental-declare-animals.trycloudflare.com',
-    'kodak-bridge-friends-due.trycloudflare.com'
-  ],
+  // allowedDevOrigins 已在 Next.js 14 中移除，使用 CORS 代替
 
   // 配置内容安全策略（移除严格限制以支持隧道访问）
   async headers() {
@@ -28,15 +19,30 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value:
               "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: ws: wss: *; " +
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: *; " +
-              "style-src 'self' 'unsafe-inline' https: http: *; " +
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http: ws: wss: *; " +
+              "style-src 'self' 'unsafe-inline' https: http: data: *; " +
               "img-src 'self' data: blob: https: http: *; " +
               "font-src 'self' data: https: http: *; " +
               "connect-src 'self' data: blob: https: http: ws: wss: *; " +
               "worker-src 'self' blob: *; " +
-              "frame-src 'self' https: *; " +
-              "base-uri 'self' https: *;"
+              "frame-src 'self' https: http: *; " +
+              "base-uri 'self' https: http: *; " +
+              "form-action 'self' https: http: *; " +
+              "object-src 'none'; " +
+              "base-uri 'self';"
           },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization'
+          }
         ],
       },
     ];
